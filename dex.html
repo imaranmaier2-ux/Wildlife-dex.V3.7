@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NOT BORING // TACTILE CAM CAM PRO</title>
+    <title>NOT BORING // TACTILE CAM PRO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         * {
@@ -16,7 +16,9 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
+            /* Fixes the Safari shift bug by locking to Dynamic Viewport Height */
+            height: 100vh;
+            height: 100dvh; 
             background-color: #121110;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Helvetica, Arial, sans-serif;
             overflow: hidden;
@@ -25,63 +27,27 @@
             align-items: center;
         }
 
-        /* Master Viewport Lock Frame - Prevents Slanting and Distortion */
+        /* Viewport Frame - Uses dynamic constraints to prevent elements cutting off */
         .camera-container {
             width: 100%;
             height: 100%;
-            max-width: 100vw;
-            max-height: 100vh;
             background-color: #d7be9f;
             display: grid;
-            grid-template-columns: 130px 1fr 130px;
-            padding: 12px;
+            grid-template-columns: 1fr;
+            grid-template-rows: 120px 1fr 130px;
+            padding: 10px;
             position: relative;
         }
 
-        /* Responsive Fix: If phone is vertical, adjust columns smoothly without slanting elements */
-        @media (max-width: 600px) and (orientation: portrait) {
-            .camera-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: 110px 1fr 110px;
-                padding: 8px;
-            }
-            .panel-left {
-                flex-direction: row !important;
-                width: 100%;
-                height: 100%;
-                padding: 0 10px !important;
-            }
-            .panel-right {
-                flex-direction: row-reverse !important;
-                width: 100%;
-                height: 100%;
-                padding: 0 10px !important;
-            }
-            .sunken-tray-vertical-barrel {
-                width: 130px !important;
-                height: 48px !important;
-            }
-            .vertical-barrel-roller {
-                width: 120px !important;
-                height: 38px !important;
-                background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px) !important;
-            }
-            .giant-shutter-red {
-                width: 75px !important;
-                height: 75px !important;
-            }
-            .right-lower-combo {
-                width: auto !important;
-            }
-        }
-
-        /* --- LEFT MECHANICAL PANEL --- */
+        /* --- TOP CONTROL PANEL --- */
         .panel-left {
             display: flex;
-            flex-direction: column;
+            flex-direction: row !important;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
+            width: 100%;
+            height: 100%;
+            padding: 0 10px;
             z-index: 10;
         }
 
@@ -107,8 +73,8 @@
 
         .sunken-tray-vertical-barrel {
             background-color: #beaa91;
-            width: 110px;
-            height: 165px;
+            width: 130px;
+            height: 52px;
             border-radius: 24px;
             box-shadow: inset 3px 4px 8px rgba(0,0,0,0.4);
             overflow: hidden;
@@ -120,10 +86,10 @@
         }
 
         .vertical-barrel-roller {
-            width: 94px;
-            height: 150px;
-            border-radius: 16px;
-            background: repeating-linear-gradient(0deg, #c5c5c5 0px, #c5c5c5 12px, #ffffff 12px, #ffffff 14px, #a3a3a3 14px, #a3a3a3 20px);
+            width: 116px;
+            height: 42px;
+            border-radius: 12px;
+            background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px);
             box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
         }
 
@@ -133,7 +99,7 @@
         }
 
         .matte-round-btn {
-            width: 48px; height: 48px;
+            width: 44px; height: 44px;
             background-color: #242221;
             border: none; border-radius: 50%;
             color: #ffffff; font-size: 15px; font-weight: bold;
@@ -141,13 +107,13 @@
             cursor: pointer;
             box-shadow: 2px 4px 8px rgba(0,0,0,0.4), inset 0px 1px 1px #666;
         }
-        .matte-round-btn:active { box-shadow: inset 2px 3px 5px rgba(0,0,0,0.6); }
 
         /* --- CENTER PANEL (STABLE VIEWPORT) --- */
         .panel-center {
             position: relative;
             width: 100%; height: 100%;
             padding: 2px;
+            overflow: hidden;
         }
 
         .viewfinder-viewport {
@@ -159,11 +125,14 @@
             box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
         }
 
+        /* Rotates and fits the camera stream to be upright in vertical mode */
         #embedded-live-video {
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            transform: rotate(90deg) scale(1.4); 
             transform-origin: center center;
-            transition: transform 0.1s ease, filter 0.3s ease;
+            transition: filter 0.3s ease;
         }
 
         .hud-center-stats {
@@ -178,7 +147,7 @@
 
         .hud-ticks { font-size: 14px; letter-spacing: 5px; opacity: 0.6; margin-bottom: 2px; }
         .hud-label { font-size: 10px; font-weight: bold; letter-spacing: 2px; opacity: 0.8; }
-        .hud-main-value { font-size: 26px; font-weight: 900; margin-top: 1px; }
+        .hud-main-value { font-size: 24px; font-weight: 900; margin-top: 1px; }
 
         .hud-bottom-bar {
             position: absolute;
@@ -197,7 +166,7 @@
         }
 
         .hud-inline-metrics {
-            display: flex; gap: 15px;
+            display: flex; gap: 12px;
             font-size: 11px; font-weight: bold; color: white;
         }
 
@@ -208,17 +177,18 @@
             background: rgba(18,17,16,0.95);
             border: 1px dashed #555; border-radius: 8px;
             color: #fff; padding: 10px; text-align: center;
-            font-size: 11px; letter-spacing: 1px;
-            display: none; z-index: 12;
+            font-size: 11px; display: none; z-index: 12;
         }
 
-        /* --- RIGHT MECHANICAL PANEL --- */
+        /* --- BOTTOM CONTROL PANEL --- */
         .panel-right {
             display: flex;
-            flex-direction: column;
+            flex-direction: row-reverse !important;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
+            width: 100%;
+            height: 100%;
+            padding: 0 10px;
             z-index: 10;
         }
 
@@ -236,36 +206,33 @@
             width: 102px; height: 38px;
             border-radius: 8px;
             background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px);
-            box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
         }
 
         .giant-shutter-red {
-            width: 105px; height: 105px;
+            width: 85px; height: 85px;
             background-color: #ff3b30;
             border: none; border-radius: 50%;
             cursor: pointer;
             box-shadow: inset 1px 2px 3px rgba(255,255,255,0.4), 0px 6px 12px rgba(0,0,0,0.45);
             display: flex; justify-content: center; align-items: center;
-            transition: transform 0.05s ease;
         }
-        .giant-shutter-red:active { transform: scale(0.95); }
 
         .shutter-cross-icon {
-            width: 26px; height: 4px; background-color: #ffffff; position: relative;
+            width: 22px; height: 4px; background-color: #ffffff; position: relative;
         }
         .shutter-cross-icon::before {
-            content: ""; width: 4px; height: 26px; background-color: #ffffff;
-            position: absolute; top: -11px; left: 11px;
+            content: ""; width: 4px; height: 22px; background-color: #ffffff;
+            position: absolute; top: -9px; left: 9px;
         }
 
         .right-lower-combo {
-            display: flex; align-items: center; gap: 8px; width: 120px; justify-content: flex-end;
+            display: flex; align-items: center; gap: 8px;
         }
         .dots-track { display: flex; gap: 4px; }
         .dot { width: 5px; height: 5px; background-color: #8b7761; border-radius: 50%; }
         .dot.active { background-color: #ffffff; }
 
-        /* --- DYNAMIC PREVIEW DATA CARD --- */
+        /* --- POPUP CARD --- */
         .hud-telemetry-overlay-card {
             position: absolute;
             top: 10px; bottom: 10px; left: 10px; right: 10px;
@@ -273,32 +240,22 @@
             border-radius: 18px;
             padding: 15px;
             display: none;
-            grid-template-columns: 140px 1fr;
+            grid-template-columns: 1fr;
+            grid-template-rows: 120px 1fr;
             gap: 15px;
             z-index: 100;
-            box-shadow: 0px 10px 30px rgba(0,0,0,0.8);
-        }
-
-        @media (max-width: 600px) {
-            .hud-telemetry-overlay-card {
-                grid-template-columns: 1fr;
-                grid-template-rows: 120px 1fr;
-                overflow-y: auto;
-            }
         }
 
         .captured-polaroid-frame {
             width: 100%; height: 100%;
             background-color: #f4f1eb;
-            padding: 6px 6px 24px 6px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
+            padding: 6px 6px 20px 6px;
             display: flex; flex-direction: column;
         }
 
         #canvas-snapshot-output {
             width: 100%; height: 100%;
             object-fit: cover;
-            border: 1px solid #ddd;
             background-color: #222;
         }
 
@@ -306,14 +263,14 @@
             display: flex; flex-direction: column; justify-content: space-between;
         }
         .card-header { font-size: 10px; color: #ff3b30; font-weight: bold; letter-spacing: 2px; }
-        .card-title { font-size: 20px; font-weight: 900; color: #fff; margin: 2px 0; }
-        .card-sub { font-size: 11px; color: #beaa91; font-style: italic; margin-bottom: 6px; }
+        .card-title { font-size: 18px; font-weight: 900; color: #fff; margin: 2px 0; }
+        .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
         .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; }
         
-        .card-actions { display: flex; gap: 8px; margin-top: 5px; }
+        .card-actions { display: flex; gap: 8px; }
         .action-btn {
             flex: 1; padding: 10px; border-radius: 6px; border: none;
-            font-weight: bold; font-size: 11px; cursor: pointer; text-transform: uppercase;
+            font-weight: bold; font-size: 11px; cursor: pointer;
         }
         .btn-save { background-color: #ffffff; color: #000; }
         .btn-reset { background-color: #333; color: #fff; }
@@ -323,21 +280,21 @@
 
     <div class="camera-container">
         
+        <!-- TOP ROW PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
             </div>
-
             <div class="sunken-tray-vertical-barrel" id="zoom-roller-wheel">
                 <div class="vertical-barrel-roller" id="zoom-barrel-graphic"></div>
             </div>
-
             <div class="dual-buttons-row">
                 <button class="matte-round-btn" id="btn-filters">🎛️</button>
                 <button class="matte-round-btn" id="btn-mode-m">M</button>
             </div>
         </div>
 
+        <!-- STABLE VIEWFINDER -->
         <div class="panel-center">
             <div class="viewfinder-viewport">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
@@ -379,15 +336,14 @@
             </div>
         </div>
 
+        <!-- BOTTOM ROW PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
             </div>
-
             <button class="giant-shutter-red" id="shutter-trigger">
                 <div class="shutter-cross-icon"></div>
             </button>
-
             <div class="right-lower-combo">
                 <div class="dots-track">
                     <div class="dot active" id="dot-f0"></div>
@@ -408,23 +364,19 @@
         const statWheel = document.getElementById('stat-roller-wheel');
         const statGraphic = document.getElementById('stat-barrel-graphic');
 
-        // --- HARDWARE STABLE INITIALIZATION ---
         function bootUpCameraLens() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                // Configured to request standard back environmental lens cleanly across orientations
                 navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
                     audio: false 
                 })
-                .then(stream => { 
-                    video.srcObject = stream;
-                })
-                .catch(err => { console.log("Camera access initialization pending.", err); });
+                .then(stream => { video.srcObject = stream; })
+                .catch(err => { console.log("Camera pending.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- DIALS GESTURE CONTROLS ---
+        // --- INTERFACE DIALS CONTROLS ---
         let currentZoom = 1;
         let zoomRotation = 0;
         let startY = 0;
@@ -436,121 +388,73 @@
                 zoomRotation += deltaY * 0.4;
                 zoomGraphic.style.transform = `rotateX(${zoomRotation}deg)`;
                 startY = e.touches[0].clientY;
-                
-                currentZoom += deltaY > 0 ? -0.1 : 0.1;
-                currentZoom = Math.max(1, Math.min(6, currentZoom));
-                video.style.transform = `scale(${currentZoom.toFixed(1)})`;
+                currentZoom += deltaY > 0 ? -0.05 : 0.05;
+                currentZoom = Math.max(1, Math.min(4, currentZoom));
+                video.style.transform = `rotate(90deg) scale(${(currentZoom * 1.4).toFixed(2)})`;
                 document.getElementById('hud-lower-pill').innerText = `♦ ZOOM ${currentZoom.toFixed(1)}X`;
             }
         });
 
-        zoomWheel.addEventListener('click', () => {
-            zoomRotation += 40;
-            zoomGraphic.style.transform = `rotateX(${zoomRotation}deg)`;
-            currentZoom = currentZoom >= 5 ? 1 : currentZoom + 1;
-            video.style.transform = `scale(${currentZoom})`;
-            document.getElementById('hud-lower-pill').innerText = `♦ ZOOM ${currentZoom}X`;
-        });
-
         let currentStatIndex = 0;
-        let startX = 0;
-        statWheel.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
-        statWheel.addEventListener('touchmove', e => {
-            let deltaX = e.touches[0].clientX - startX;
-            if (Math.abs(deltaX) > 15) {
-                currentStatIndex = (currentStatIndex + 1) % 3;
-                updateStatsDisplay();
-                startX = e.touches[0].clientX;
-            }
-        });
         statWheel.addEventListener('click', () => {
             currentStatIndex = (currentStatIndex + 1) % 3;
-            updateStatsDisplay();
-        });
-
-        function updateStatsDisplay() {
             const labels = ["SHUTTER SPEED", "EXPOSURE VALUE", "ISO OPTICS"];
             const values = ["1/210", "EV -0.7", "ISO 64"];
             document.getElementById('hud-stat-label').innerText = labels[currentStatIndex];
             document.getElementById('hud-stat-value').innerText = values[currentStatIndex];
-            
-            let currentAngle = currentStatIndex * 60;
-            statGraphic.style.transform = `rotateY(${currentAngle}deg)`;
-        }
+            statGraphic.style.transform = `rotateY(${currentStatIndex * 60}deg)`;
+        });
 
-        // --- FILTER ENGINE ---
+        // --- FILTERS ---
         let currentFilter = 0;
-        const filterModes = ["none", "grayscale(1) contrast(1.7)", "hue-rotate(90deg) brightness(1.3) contrast(1.2)", "invert(1) hue-rotate(180deg)"];
-        
+        const filterModes = ["none", "grayscale(1) contrast(1.7)", "hue-rotate(90deg) brightness(1.3)", "invert(1)"];
         function cycleFilters() {
             currentFilter = (currentFilter + 1) % 4;
             video.style.filter = filterModes[currentFilter];
-            document.querySelectorAll('.dot').forEach((d, idx) => {
-                d.classList.toggle('active', idx === currentFilter);
-            });
+            document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === currentFilter));
         }
         document.getElementById('btn-filters').addEventListener('click', cycleFilters);
         document.getElementById('btn-filter-toggle').addEventListener('click', cycleFilters);
 
-        // --- MANUAL OVERRIDE KNOB ---
+        // --- MANUAL OVERRIDE ---
         let isModeActive = false;
         document.getElementById('btn-mode-m').addEventListener('click', () => {
             isModeActive = !isModeActive;
             document.getElementById('knob-left').style.left = isModeActive ? "71px" : "3px";
             document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
-            if (isModeActive) document.getElementById('manual-text-input').focus();
         });
 
-        // --- PHOTO CAPTURE FRAME ENGINE ---
+        // --- CAPTURE FIX FOR ROTATED CANVAS ---
         document.getElementById('shutter-trigger').addEventListener('click', () => {
             const canvas = document.getElementById('canvas-snapshot-output');
             const ctx = canvas.getContext('2d');
             
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
+            // Swap canvas aspect layout parameters to natively match the 90deg view turn
+            canvas.width = video.videoHeight || 480;
+            canvas.height = video.videoWidth || 640;
             
-            ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.scale(currentZoom, currentZoom);
+            ctx.rotate(90 * Math.PI / 180);
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
             
             ctx.filter = getComputedStyle(video).filter;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            ctx.restore();
-
-            const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
-            parseTargetTelemetry(rawIn);
+            ctx.drawImage(video, 0, 0, canvas.height, canvas.width);
             
+            const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
+            if (rawIn.includes("woodpecker")) {
+                document.getElementById('res-name').innerText = "Pileated Woodpecker 🐦";
+                document.getElementById('res-science').innerText = "Dryocopus pileatus";
+                document.getElementById('res-fact').innerText = "Crimson crest cap wood excavator.";
+            } else {
+                document.getElementById('res-name').innerText = "White-Tailed Deer 🦊";
+                document.getElementById('res-science').innerText = "Odocoileus virginianus";
+                document.getElementById('res-fact').innerText = "Native alert Texas herbivore.";
+            }
             document.getElementById('result-overlay').style.display = "grid";
         });
 
-        function parseTargetTelemetry(query) {
-            let title = "White-Tailed Deer 🦊";
-            let science = "Odocoileus virginianus";
-            let desc = "Common highly alert native Texas forest herbivore. Caught via custom live image digital viewport processing engines.";
-
-            if (query.includes("woodpecker")) {
-                title = "Pileated Woodpecker 🐦"; science = "Dryocopus pileatus";
-                desc = "Massive forest woodpecker with a brilliant fire-crimson crest cap. Excavatess large structural timber cavities.";
-            } else if (query.includes("snake") || query.includes("cottonmouth")) {
-                title = "Western Cottonmouth 🐍"; science = "Agkistrodon piscivorus";
-                desc = "Venomous semi-aquatic pit viper. Exposes a distinct snow-white mouth interior flash frame when tracking local targets.";
-            } else if (query.includes("bass")) {
-                title = "Largemouth Bass 🐟"; science = "Micropterus salmoides";
-                desc = "Aggressive apex fresh-water game fish native to shallow Texas creek logs and lily pads.";
-            }
-
-            document.getElementById('res-name').innerText = title;
-            document.getElementById('res-science').innerText = science;
-            document.getElementById('res-fact').innerText = desc;
-        }
-
         document.getElementById('btn-close-card').addEventListener('click', () => {
             document.getElementById('result-overlay').style.display = "none";
-        });
-
-        document.getElementById('btn-log-dex').addEventListener('click', () => {
-            alert("Picture file data saved inside catalog storage arrays!");
         });
     </script>
 </body>
