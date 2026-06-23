@@ -2,84 +2,146 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WILDLIFE DEX // TACTILE CAM V3.7.1-FULL-RESTORE</title>
+    <title>WILDLIFE DEX // FULL SYSTEM V3.7</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
+        /* RESET & BASE STYLES */
         * { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; background-color: #121110; font-family: -apple-system, BlinkMacSystemFont, sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; background-color: #121110; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; overflow: hidden; }
 
-        .camera-container { width: 100%; height: 100%; background-color: #d7be9f; display: grid; padding: 12px; position: relative; gap: 10px; grid-template-columns: 140px 1fr 140px; grid-template-rows: 1fr; }
-        @media (orientation: portrait) {
-            .camera-container { grid-template-columns: 1fr; grid-template-rows: 110px 1fr 140px; }
-            .panel-left { flex-direction: row !important; width: 100% !important; height: 100% !important; padding: 0 10px !important; }
-            .panel-right { flex-direction: row-reverse !important; width: 100% !important; height: 100% !important; padding: 0 10px !important; gap: 15px; }
+        /* GRID LAYOUT CONTAINER */
+        .camera-container { 
+            width: 100%; height: 100%; 
+            background-color: #d7be9f; 
+            display: grid; 
+            padding: 12px; 
+            gap: 10px; 
+            grid-template-columns: 140px 1fr 140px; 
+            grid-template-rows: 1fr; 
         }
 
-        .panel-left { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; z-index: 10; }
-        .sunken-tray-vertical-barrel { background-color: #beaa91; width: 110px; height: 160px; border-radius: 24px; box-shadow: inset 3px 4px 8px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; touch-action: none; }
-        .vertical-barrel-roller { width: 94px; height: 144px; border-radius: 16px; background: repeating-linear-gradient(0deg, #c5c5c5 0px, #c5c5c5 12px, #ffffff 12px, #ffffff 14px, #a3a3a3 14px, #a3a3a3 20px); }
-        .matte-round-btn { width: 46px; height: 46px; background-color: #242221; border: none; border-radius: 50%; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 2px 4px 8px rgba(0,0,0,0.4); }
+        /* MOBILE OVERRIDE */
+        @media (orientation: portrait) {
+            .camera-container { grid-template-columns: 1fr; grid-template-rows: 110px 1fr 140px; }
+            .panel-left, .panel-right { flex-direction: row !important; padding: 0 10px !important; }
+            .giant-shutter-red { width: 76px !important; height: 76px !important; }
+        }
+
+        /* UI PANELS */
+        .panel-left, .panel-right { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; z-index: 10; }
         
+        /* VIEWPORT */
         .panel-center { position: relative; width: 100%; height: 100%; overflow: hidden; }
-        .viewfinder-viewport { width: 100%; height: 100%; background-color: #000; border-radius: 24px; overflow: hidden; }
-        #embedded-live-video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
-        
-        .manual-keyboard-override { width: calc(100% - 30px); position: absolute; bottom: 55px; left: 15px; background: #121110; border: 1px dashed #beaa91; color: #fff; padding: 10px; display: none; z-index: 22; }
-        .hud-telemetry-overlay-card { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; background: rgba(18, 17, 16, 0.98); border-radius: 18px; padding: 15px; display: none; z-index: 100; }
-        
-        .dex-dashboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121110; z-index: 200; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .viewfinder-viewport { width: 100%; height: 100%; background-color: #000; border-radius: 24px; position: relative; overflow: hidden; }
+        #live-video-feed { width: 100%; height: 100%; object-fit: cover; transition: transform 0.25s ease-out; }
+
+        /* INTERACTIVE ELEMENTS */
+        .matte-btn { width: 50px; height: 50px; background-color: #242221; border-radius: 50%; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+        .giant-shutter-red { width: 90px; height: 90px; border-radius: 50%; background: #ff3b30; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .zoom-roller { width: 100px; height: 150px; background: #beaa91; border-radius: 20px; cursor: ns-resize; }
+
+        /* OVERLAYS */
+        .manual-input-field { position: absolute; bottom: 80px; left: 15px; right: 15px; padding: 12px; background: #121110; color: #fff; border: 1px dashed #beaa91; display: none; }
+        .overlay-card { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; background: rgba(18, 17, 16, 0.98); border-radius: 18px; padding: 20px; display: none; flex-direction: column; z-index: 100; color: #fff; }
+        .gallery-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121110; z-index: 200; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
         .dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-        
-        .panel-right { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; }
-        .giant-shutter-red { width: 90px; height: 90px; border-radius: 50%; background: #ff3b30; border: none; }
     </style>
 </head>
 <body>
+
     <div class="camera-container">
         <div class="panel-left">
-            <div class="sunken-tray-vertical-barrel" id="zoom-roller"><div class="vertical-barrel-roller"></div></div>
-            <button class="matte-round-btn" id="btn-mode-m">M</button>
+            <div class="zoom-roller" id="zoom-control"></div>
+            <button class="matte-btn" id="btn-m-mode">M</button>
         </div>
+
         <div class="panel-center">
             <div class="viewfinder-viewport">
-                <video id="video" autoplay playsinline muted></video>
-                <input type="text" id="manual-input" class="manual-keyboard-override" placeholder="[ ENTER SPECIMEN NAME ]">
-                <div class="hud-telemetry-overlay-card" id="overlay">
-                    <canvas id="canvas" style="width:100%; height:200px; background:#222;"></canvas>
-                    <h2 id="res-name" style="color:#fff;">Specimen</h2>
-                    <p id="res-fact" style="color:#beaa91;">Data...</p>
-                    <button class="matte-round-btn" id="btn-save">＋ Save</button>
-                    <button class="matte-round-btn" id="btn-close">✕</button>
+                <video id="live-video-feed" autoplay playsinline muted></video>
+                <input type="text" id="manual-text-input" class="manual-input-field" placeholder="[ ENTER SPECIMEN NAME ]">
+                
+                <div class="overlay-card" id="scan-overlay">
+                    <h2 id="res-title">Specimen Log</h2>
+                    <p id="res-desc">Processing data...</p>
+                    <button class="matte-btn" id="btn-save-entry" style="width:100px;">Save</button>
+                    <button class="matte-btn" id="btn-close-scan" style="width:100px;">Close</button>
                 </div>
             </div>
         </div>
+
         <div class="panel-right">
-            <button class="giant-shutter-red" id="shutter"></button>
-            <button class="matte-round-btn" id="btn-dex">📖</button>
+            <button class="giant-shutter-red" id="shutter-trigger"></button>
+            <button class="matte-btn" id="btn-open-dex">📖</button>
         </div>
-        <div class="dex-dashboard-overlay" id="gallery">
-            <div class="dex-grid" id="cards"></div>
-            <button class="matte-round-btn" id="btn-close-dex">✕</button>
+
+        <div class="gallery-screen" id="gallery-container">
+            <div class="dex-grid" id="dex-cards"></div>
+            <button class="matte-btn" id="btn-close-gallery">Close</button>
         </div>
     </div>
 
     <script>
-        const video = document.getElementById('video');
-        const input = document.getElementById('manual-input');
-        let zoom = 1;
+        const video = document.getElementById('live-video-feed');
+        const input = document.getElementById('manual-text-input');
+        
+        // 1. Initialize Camera
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => console.error("Camera Error:", err));
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => video.srcObject = s);
-
-        document.getElementById('zoom-roller').onmousemove = (e) => { zoom = 1 + (e.clientY / 100); video.style.transform = `scale(${zoom})`; };
-        document.getElementById('btn-mode-m').onclick = () => input.style.display = input.style.display === "block" ? "none" : "block";
-
-        document.getElementById('shutter').onclick = () => {
-            const txt = input.value.toLowerCase();
-            const db = { "deer": ["White-Tailed Deer", "Flags white tail when alarmed."], "raccoon": ["Raccoon", "Nocturnal scavenger."], "coyote": ["Coyote", "Smart canine."], "hawk": ["Red-Tailed Hawk", "Raptor."], "armadillo": ["Armadillo", "Armor-plated."] };
-            let match = db[Object.keys(db).find(k => txt.includes(k))] || ["Unknown Specimen", "No match found."];
-            document.getElementById('res-name').innerText = match[0];
-            document.getElementById('res-fact').innerText = match[1];
-            document.getElementById('overlay').style.display = "block";
+        // 2. Zoom Functionality
+        let zoomLevel = 1;
+        document.getElementById('zoom-control').onmousemove = (e) => {
+            zoomLevel = 1 + (e.clientY / 100);
+            video.style.transform = `scale(${zoomLevel})`;
         };
 
-        document.getElementById('btn-save').onclick = ()
+        // 3. M-Mode Toggle
+        document.getElementById('btn-m-mode').onclick = () => {
+            input.style.display = (input.style.display === "block") ? "none" : "block";
+        };
+
+        // 4. Identification Database & Shutter
+        document.getElementById('shutter-trigger').onclick = () => {
+            const query = input.value.toLowerCase();
+            const database = {
+                "deer": ["White-Tailed Deer", "Odocoileus virginianus. Common herbivore."],
+                "raccoon": ["Raccoon", "Procyon lotor. Nocturnal bandit."],
+                "coyote": ["Coyote", "Canis latrans. Highly adaptable."],
+                "hawk": ["Red-Tailed Hawk", "Buteo jamaicensis. High-altitude raptor."],
+                "armadillo": ["Nine-Banded Armadillo", "Dasypus novemcinctus. Armored mammal."],
+                "squirrel": ["Eastern Gray Squirrel", "Sciurus carolinensis. Nut-forager."]
+            };
+
+            let match = ["Unknown", "No biological match found in scanner."];
+            for (let key in database) {
+                if (query.includes(key)) match = database[key];
+            }
+
+            document.getElementById('res-title').innerText = match[0];
+            document.getElementById('res-desc').innerText = match[1];
+            document.getElementById('scan-overlay').style.display = "flex";
+        };
+
+        // 5. Gallery Logic
+        document.getElementById('btn-save-entry').onclick = () => {
+            const entry = document.getElementById('res-title').innerText;
+            let dex = JSON.parse(localStorage.getItem('dex') || '[]');
+            dex.push(entry);
+            localStorage.setItem('dex', JSON.stringify(dex));
+            document.getElementById('scan-overlay').style.display = "none";
+        };
+
+        document.getElementById('btn-open-dex').onclick = () => {
+            const dex = JSON.parse(localStorage.getItem('dex') || '[]');
+            const container = document.getElementById('dex-cards');
+            container.innerHTML = dex.map(item => `<div class="matte-btn" style="width:100%;">${item}</div>`).join('');
+            document.getElementById('gallery-container').style.display = "flex";
+        };
+
+        // Close buttons
+        document.getElementById('btn-close-scan').onclick = () => document.getElementById('scan-overlay').style.display = "none";
+        document.getElementById('btn-close-gallery').onclick = () => document.getElementById('gallery-container').style.display = "none";
+    </script>
+</body>
+</html>
