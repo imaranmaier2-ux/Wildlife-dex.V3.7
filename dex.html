@@ -141,18 +141,21 @@
             position: relative;
             overflow: hidden;
             box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
+        /* Base video styles allow clean dimension swapping centering */
         #embedded-live-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform-origin: center center;
-            transition: transform 0.2s cubic-bezier(0.1, 0.8, 0.3, 1), filter 0.3s ease;
+            position: absolute;
+            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, filter 0.3s ease;
             cursor: pointer;
         }
 
-        /* Calibration Target Overlay Hint */
         .calibration-hint {
             position: absolute;
             top: 70px; left: 50%;
@@ -161,7 +164,7 @@
             color: #fff; font-size: 10px; font-weight: bold;
             padding: 4px 8px; border-radius: 4px;
             pointer-events: none; letter-spacing: 1px;
-            opacity: 0.7;
+            opacity: 0.7; z-index: 20;
         }
 
         .hud-center-stats {
@@ -171,7 +174,7 @@
             text-align: center;
             color: #ffffff;
             text-shadow: 0px 2px 4px rgba(0,0,0,0.7);
-            pointer-events: none;
+            pointer-events: none; z-index: 20;
         }
 
         .hud-ticks { font-size: 14px; letter-spacing: 5px; opacity: 0.6; margin-bottom: 2px; }
@@ -182,7 +185,7 @@
             position: absolute;
             bottom: 12px; left: 15px; right: 15px;
             display: flex; justify-content: space-between; align-items: center;
-            pointer-events: none;
+            pointer-events: none; z-index: 20;
         }
 
         .hud-pill-box {
@@ -203,7 +206,7 @@
             background: rgba(18,17,16,0.95);
             border: 1px dashed #555; border-radius: 8px;
             color: #fff; padding: 10px; text-align: center;
-            font-size: 11px; display: none; z-index: 12;
+            font-size: 11px; display: none; z-index: 22;
         }
 
         /* --- MECHANICAL PANEL (RIGHT / BOTTOM) --- */
@@ -290,6 +293,7 @@
 
     <div class="camera-container">
         
+        <!-- LEFT CONTROL PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -303,11 +307,12 @@
             </div>
         </div>
 
+        <!-- VIEWFINDER DISPLAY PANEL -->
         <div class="panel-center">
-            <div class="viewfinder-viewport">
+            <div class="viewfinder-viewport" id="viewport-box">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
                 
-                <div class="calibration-hint" id="cal-hint">Tap screen to calibrate angle</div>
+                <div class="calibration-hint" id="cal-hint">Tap screen to fix distortion</div>
 
                 <div class="hud-center-stats">
                     <div class="hud-ticks">▪ ▪ ▪ ▪ ▪ <span style="color:#ff3b30;">▪</span> ▪ ▪ ▪ ▪</div>
@@ -316,7 +321,7 @@
                 </div>
 
                 <div class="hud-bottom-bar">
-                    <div class="hud-pill-box" id="hud-lower-pill">♦ 0° ANGLE</div>
+                    <div class="hud-pill-box" id="hud-lower-pill">♦ 0° CALIBRATION</div>
                     <div class="hud-inline-metrics">
                         <div>⚏ 18</div>
                         <div>☀ 5440K</div>
@@ -346,6 +351,7 @@
             </div>
         </div>
 
+        <!-- RIGHT CONTROL PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
@@ -368,6 +374,7 @@
 
     <script>
         const video = document.getElementById('embedded-live-video');
+        const viewportBox = document.getElementById('viewport-box');
         const zoomWheel = document.getElementById('zoom-roller-wheel');
         const zoomGraphic = document.getElementById('zoom-barrel-graphic');
         const statWheel = document.getElementById('stat-roller-wheel');
@@ -380,31 +387,42 @@
                     audio: false 
                 })
                 .then(stream => { video.srcObject = stream; })
-                .catch(err => { console.log("Camera hardware response loop missed.", err); });
+                .catch(err => { console.log("Camera loop engine glitch resolution check.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- 🔄 MULTI-ANGLE HARDWARE CALIBRATION ENGINE ---
+        // --- 🔄 ADVANCED SAFARI FRAME RATIO TRANSFORMS ---
         let currentAngleIndex = 0;
         const targetAngles = [0, 90, 180, 270];
         
         video.addEventListener('click', () => {
             currentAngleIndex = (currentAngleIndex + 1) % targetAngles.length;
             applyViewportTransforms();
-            
-            // Hide the hint overlay after they interact with it
             document.getElementById('cal-hint').style.display = 'none';
         });
 
         function applyViewportTransforms() {
             let angle = targetAngles[currentAngleIndex];
-            // When rotated 90 or 270, the aspect ratio reverses, so we scale up slightly to fill the viewport safely
-            let scaleFactor = (angle === 90 || angle === 270) ? (currentZoom * 1.5) : currentZoom;
             
-            video.style.transform = `rotate(${angle}deg) scale(${scaleFactor})`;
-            document.getElementById('hud-lower-pill').innerText = `♦ ${angle}° ANGLE`;
+            if (angle === 90 || angle === 270) {
+                // Swap viewport constraints to stop Safari scaling squash bugs
+                let vBoxWidth = viewportBox.clientWidth;
+                let vBoxHeight = viewportBox.clientHeight;
+                
+                video.style.width = `${vBoxHeight}px`;
+                video.style.height = `${vBoxWidth}px`;
+            } else {
+                video.style.width = '100%';
+                video.style.height = '100%';
+            }
+            
+            video.style.transform = `rotate(${angle}deg) scale(${currentZoom})`;
+            document.getElementById('hud-lower-pill').innerText = `♦ ${angle}° TRANSPOSED`;
         }
+
+        // Handle resize layout corrections seamlessly
+        window.addEventListener('resize', applyViewportTransforms);
 
         // --- INTERFACE DIALS CONTROLS ---
         let currentZoom = 1;
