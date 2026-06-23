@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NOT BORING // TACTILE CAM PRO</title>
+    <title>WILDLIFE DEX // TACTILE CAM V3.7</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         * {
@@ -283,7 +283,6 @@
 
     <div class="camera-container">
         
-        <!-- LEFT CONTROL PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -294,7 +293,6 @@
             <button class="matte-round-btn" id="btn-mode-m">M</button>
         </div>
 
-        <!-- VIEWFINDER DISPLAY PANEL -->
         <div class="panel-center">
             <div class="viewfinder-viewport">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
@@ -324,7 +322,7 @@
                     </div>
                     <div class="card-info-pane">
                         <div>
-                            <div class="card-header" id="res-header">Hardware Capture Diagnostics</div>
+                            <div class="card-header" id="res-header">Wildlife-dex V3.7 Diagnostic Stream</div>
                             <div class="card-title" id="res-name">Specimen Active</div>
                             <div class="card-sub" id="res-science">Taxonomy Branch</div>
                             <div class="card-body" id="res-fact">Processing data loops...</div>
@@ -338,7 +336,6 @@
             </div>
         </div>
 
-        <!-- RIGHT CONTROL PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
@@ -346,7 +343,7 @@
             <button class="giant-shutter-red" id="shutter-trigger">
                 <div class="shutter-cross-icon"></div>
             </button>
-            <div style="width:46px; height:46px;"></div> <!-- Spacer balancing layout grid -->
+            <div style="width:46px; height:46px;"></div>
         </div>
 
     </div>
@@ -365,12 +362,12 @@
                     audio: false 
                 })
                 .then(stream => { video.srcObject = stream; })
-                .catch(err => { console.log("Camera hardware system stream diagnostic hook.", err); });
+                .catch(err => { console.log("Camera hardware alignment check.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- 🔄 MULTI-ANGLE ANCHOR SYSTEM ---
+        // --- 🔄 MULTI-ANGLE SYSTEM ---
         let currentAngleIndex = 0;
         const targetAngles = [0, 90, 180, 270];
         
@@ -386,8 +383,8 @@
             if (angle === 90 || angle === 270) {
                 rawScale = currentZoom * 1.75; 
             }
-            video.style.transform = `rotate(${angle}deg) scale(${rawScale})`;
-            document.getElementById('hud-lower-pill').innerText = `♦ ${angle}° CALIBRATED`;
+            video.style.transform = 'rotate(' + angle + 'deg) scale(' + rawScale + ')';
+            document.getElementById('hud-lower-pill').innerText = '♦ ' + angle + '° CALIBRATED';
         }
 
         // --- INTERFACE DIALS CONTROLS ---
@@ -395,12 +392,12 @@
         let zoomRotation = 0;
         let startY = 0;
 
-        zoomWheel.addEventListener('touchstart', e => { startY = e.touches[0].clientY; });
-        zoomWheel.addEventListener('touchmove', e => {
+        zoomWheel.addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; });
+        zoomWheel.addEventListener('touchmove', function(e) {
             let deltaY = e.touches[0].clientY - startY;
             if (Math.abs(deltaY) > 5) {
                 zoomRotation += deltaY * 0.4;
-                zoomGraphic.style.transform = `rotateX(${zoomRotation}deg)`;
+                zoomGraphic.style.transform = 'rotateX(' + zoomRotation + 'deg)';
                 startY = e.touches[0].clientY;
                 currentZoom += deltaY > 0 ? -0.05 : 0.05;
                 currentZoom = Math.max(1, Math.min(4, currentZoom));
@@ -409,25 +406,25 @@
         });
 
         let currentStatIndex = 0;
-        statWheel.addEventListener('click', () => {
+        statWheel.addEventListener('click', function() {
             currentStatIndex = (currentStatIndex + 1) % 3;
             const labels = ["SHUTTER SPEED", "EXPOSURE VALUE", "ISO OPTICS"];
             const values = ["1/210", "EV -0.7", "ISO 64"];
             document.getElementById('hud-stat-label').innerText = labels[currentStatIndex];
             document.getElementById('hud-stat-value').innerText = values[currentStatIndex];
-            statGraphic.style.transform = `rotateY(${currentStatIndex * 60}deg)`;
+            statGraphic.style.transform = 'rotateY(' + (currentStatIndex * 60) + 'deg)';
         });
 
         // --- OVERRIDE SYSTEM ---
         let isModeActive = false;
-        document.getElementById('btn-mode-m').addEventListener('click', () => {
+        document.getElementById('btn-mode-m').addEventListener('click', function() {
             isModeActive = !isModeActive;
             document.getElementById('knob-left').style.left = isModeActive ? "71px" : "3px";
             document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
         });
 
         // --- 📊 SCANNER ANALYSIS ENGINE ---
-        document.getElementById('shutter-trigger').addEventListener('click', () => {
+        document.getElementById('shutter-trigger').addEventListener('click', function() {
             const canvas = document.getElementById('canvas-snapshot-output');
             const ctx = canvas.getContext('2d');
             let angle = targetAngles[currentAngleIndex];
@@ -462,7 +459,7 @@
             
             let r = pixelData[0], g = pixelData[1], b = pixelData[2];
             let avg = (r + g + b) / 3;
-            let variance = ((r-avg)**2 + (g-avg)**2 + (b-avg)**2) / 3;
+            let variance = (Math.pow(r-avg, 2) + Math.pow(g-avg, 2) + Math.pow(b-avg, 2)) / 3;
             let saturation = Math.sqrt(variance);
 
             const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
@@ -488,8 +485,8 @@
             document.getElementById('result-overlay').style.display = "grid";
         });
 
-        // --- 🗃️ REGISTER BUTTON WIRE-UP ---
-        document.getElementById('btn-log-dex').addEventListener('click', () => {
+        // --- 🗃️ REGISTER ENTRY ACTION ---
+        document.getElementById('btn-log-dex').addEventListener('click', function() {
             const saveBtn = document.getElementById('btn-log-dex');
             const originalText = saveBtn.innerText;
             
@@ -497,7 +494,7 @@
             saveBtn.style.backgroundColor = "#4cd964";
             saveBtn.style.color = "#ffffff";
             
-            setTimeout(() => {
+            setTimeout(function() {
                 document.getElementById('result-overlay').style.display = "none";
                 saveBtn.innerText = originalText;
                 saveBtn.style.backgroundColor = "#ffffff";
@@ -505,7 +502,7 @@
             }, 1000);
         });
 
-        document.getElementById('btn-close-card').addEventListener('click', () => {
+        document.getElementById('btn-close-card').addEventListener('click', function() {
             document.getElementById('result-overlay').style.display = "none";
         });
     </script>
