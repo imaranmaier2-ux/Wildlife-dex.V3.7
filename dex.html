@@ -1,4 +1,3 @@
-HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,8 +116,6 @@ HTML
             background: repeating-linear-gradient(0deg, #c5c5c5 0px, #c5c5c5 12px, #ffffff 12px, #ffffff 14px, #a3a3a3 14px, #a3a3a3 20px);
         }
 
-        .dual-buttons-row { display: flex; gap: 10px; }
-
         .matte-round-btn {
             width: 46px; height: 46px;
             background-color: #242221;
@@ -149,7 +146,7 @@ HTML
             height: 100%;
             object-fit: cover;
             transform-origin: center center;
-            transition: transform 0.2s ease, filter 0.3s ease;
+            transition: transform 0.2s ease;
             cursor: pointer;
         }
 
@@ -244,11 +241,6 @@ HTML
             content: ""; width: 4px; height: 22px; background-color: #ffffff; position: absolute; top: -9px; left: 9px;
         }
 
-        .right-lower-combo { display: flex; align-items: center; gap: 8px; width: 120px; justify-content: center; }
-        .dots-track { display: flex; gap: 4px; }
-        .dot { width: 5px; height: 5px; background-color: #8b7761; border-radius: 50%; }
-        .dot.active { background-color: #ffffff; }
-
         /* --- DATA SHEET OVERLAY --- */
         .hud-telemetry-overlay-card {
             position: absolute;
@@ -281,8 +273,9 @@ HTML
         .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
         .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; }
         .card-actions { display: flex; gap: 8px; }
-        .action-btn { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
+        .action-btn { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; transition: background 0.2s; }
         .btn-save { background-color: #ffffff; color: #000; }
+        .btn-save:active { background-color: #4cd964; color: #fff; }
         .btn-reset { background-color: #333; color: #fff; }
     </style>
 </head>
@@ -290,6 +283,7 @@ HTML
 
     <div class="camera-container">
         
+        <!-- LEFT CONTROL PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -297,12 +291,10 @@ HTML
             <div class="sunken-tray-vertical-barrel" id="zoom-roller-wheel">
                 <div class="vertical-barrel-roller" id="zoom-barrel-graphic"></div>
             </div>
-            <div class="dual-buttons-row">
-                <button class="matte-round-btn" id="btn-filters">🎛️</button>
-                <button class="matte-round-btn" id="btn-mode-m">M</button>
-            </div>
+            <button class="matte-round-btn" id="btn-mode-m">M</button>
         </div>
 
+        <!-- VIEWFINDER DISPLAY PANEL -->
         <div class="panel-center">
             <div class="viewfinder-viewport">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
@@ -332,7 +324,7 @@ HTML
                     </div>
                     <div class="card-info-pane">
                         <div>
-                            <div class="card-header">Hardware Capture Diagnostics</div>
+                            <div class="card-header" id="res-header">Hardware Capture Diagnostics</div>
                             <div class="card-title" id="res-name">Specimen Active</div>
                             <div class="card-sub" id="res-science">Taxonomy Branch</div>
                             <div class="card-body" id="res-fact">Processing data loops...</div>
@@ -346,6 +338,7 @@ HTML
             </div>
         </div>
 
+        <!-- RIGHT CONTROL PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
@@ -353,15 +346,7 @@ HTML
             <button class="giant-shutter-red" id="shutter-trigger">
                 <div class="shutter-cross-icon"></div>
             </button>
-            <div class="right-lower-combo">
-                <div class="dots-track">
-                    <div class="dot active" id="dot-f0"></div>
-                    <div class="dot" id="dot-f1"></div>
-                    <div class="dot" id="dot-f2"></div>
-                    <div class="dot" id="dot-f3"></div>
-                </div>
-                <button class="matte-round-btn" id="btn-filter-toggle">⌌%</button>
-            </div>
+            <div style="width:46px; height:46px;"></div> <!-- Spacer balancing layout grid -->
         </div>
 
     </div>
@@ -380,12 +365,12 @@ HTML
                     audio: false 
                 })
                 .then(stream => { video.srcObject = stream; })
-                .catch(err => { console.log("Camera engine connection status.", err); });
+                .catch(err => { console.log("Camera hardware system stream diagnostic hook.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- 🔄 MULTI-ANGLE SYSTEM WITH NO-SQUISH ZOOM INTERSECTION ---
+        // --- 🔄 MULTI-ANGLE ANCHOR SYSTEM ---
         let currentAngleIndex = 0;
         const targetAngles = [0, 90, 180, 270];
         
@@ -397,13 +382,10 @@ HTML
 
         function applyViewportTransforms() {
             let angle = targetAngles[currentAngleIndex];
-            
-            // Re-render layout scale factor dynamically if flipped sideways to completely eliminate stretching
             let rawScale = currentZoom;
             if (angle === 90 || angle === 270) {
                 rawScale = currentZoom * 1.75; 
             }
-            
             video.style.transform = `rotate(${angle}deg) scale(${rawScale})`;
             document.getElementById('hud-lower-pill').innerText = `♦ ${angle}° CALIBRATED`;
         }
@@ -436,17 +418,6 @@ HTML
             statGraphic.style.transform = `rotateY(${currentStatIndex * 60}deg)`;
         });
 
-        // --- FILTERS ---
-        let currentFilter = 0;
-        const filterModes = ["none", "grayscale(1) contrast(1.7)", "hue-rotate(90deg) brightness(1.3)", "invert(1)"];
-        function cycleFilters() {
-            currentFilter = (currentFilter + 1) % 4;
-            video.style.filter = filterModes[currentFilter];
-            document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === currentFilter));
-        }
-        document.getElementById('btn-filters').addEventListener('click', cycleFilters);
-        document.getElementById('btn-filter-toggle').addEventListener('click', cycleFilters);
-
         // --- OVERRIDE SYSTEM ---
         let isModeActive = false;
         document.getElementById('btn-mode-m').addEventListener('click', () => {
@@ -455,7 +426,7 @@ HTML
             document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
         });
 
-        // --- SNAPSHOT GENERATOR ---
+        // --- 📊 SCANNER ANALYSIS ENGINE ---
         document.getElementById('shutter-trigger').addEventListener('click', () => {
             const canvas = document.getElementById('canvas-snapshot-output');
             const ctx = canvas.getContext('2d');
@@ -473,7 +444,6 @@ HTML
             ctx.rotate(angle * Math.PI / 180);
             ctx.scale(currentZoom, currentZoom);
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
-            ctx.filter = getComputedStyle(video).filter;
             
             if (angle === 90 || angle === 270) {
                 ctx.drawImage(video, 0, 0, canvas.height, canvas.width);
@@ -481,17 +451,58 @@ HTML
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             }
             
+            let sampleX = Math.floor(canvas.width / 2);
+            let sampleY = Math.floor(canvas.height / 2);
+            let pixelData;
+            try {
+                pixelData = ctx.getImageData(sampleX, sampleY, 1, 1).data;
+            } catch(e) {
+                pixelData = [120, 110, 100, 255];
+            }
+            
+            let r = pixelData[0], g = pixelData[1], b = pixelData[2];
+            let avg = (r + g + b) / 3;
+            let variance = ((r-avg)**2 + (g-avg)**2 + (b-avg)**2) / 3;
+            let saturation = Math.sqrt(variance);
+
             const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
+            
             if (rawIn.includes("woodpecker")) {
                 document.getElementById('res-name').innerText = "Pileated Woodpecker 🐦";
                 document.getElementById('res-science').innerText = "Dryocopus pileatus";
                 document.getElementById('res-fact').innerText = "Crimson crest cap wood excavator.";
-            } else {
+            } else if (rawIn.includes("deer")) {
                 document.getElementById('res-name').innerText = "White-Tailed Deer 🦊";
                 document.getElementById('res-science').innerText = "Odocoileus virginianus";
                 document.getElementById('res-fact').innerText = "Native alert Texas herbivore.";
+            } else if (saturation < 14) { 
+                document.getElementById('res-name').innerText = "Flat Surface / Floor 🗺️";
+                document.getElementById('res-science').innerText = "Null Specimen Detected";
+                document.getElementById('res-fact').innerText = "The camera lens is targeting a floor, plain ceiling, or solid structural barrier.";
+            } else {
+                document.getElementById('res-name').innerText = "White-Tailed Deer 🦊";
+                document.getElementById('res-science').innerText = "Odocoileus virginianus";
+                document.getElementById('res-fact').innerText = "Native alert Texas herbivore detected inside forest cluster boundaries.";
             }
+            
             document.getElementById('result-overlay').style.display = "grid";
+        });
+
+        // --- 🗃️ REGISTER BUTTON WIRE-UP ---
+        document.getElementById('btn-log-dex').addEventListener('click', () => {
+            const saveBtn = document.getElementById('btn-log-dex');
+            const originalText = saveBtn.innerText;
+            
+            saveBtn.innerText = "✓ Entry Registered!";
+            saveBtn.style.backgroundColor = "#4cd964";
+            saveBtn.style.color = "#ffffff";
+            
+            setTimeout(() => {
+                document.getElementById('result-overlay').style.display = "none";
+                saveBtn.innerText = originalText;
+                saveBtn.style.backgroundColor = "#ffffff";
+                saveBtn.style.color = "#000000";
+            }, 1000);
         });
 
         document.getElementById('btn-close-card').addEventListener('click', () => {
