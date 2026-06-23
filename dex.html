@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WILDLIFE DEX // TACTILE CAM V3.7</title>
+    <title>WILDLIFE DEX // TACTILE CAM V3.7.2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         * {
@@ -209,54 +209,9 @@
             position: absolute;
             bottom: 55px; left: 15px;
             background: rgba(18,17,16,0.95);
-            border: 1px dashed #555; border-radius: 8px;
+            border: 1px dashed #beaa91; border-radius: 8px;
             color: #fff; padding: 10px; text-align: center;
-            font-size: 11px; display: none; z-index: 22;
-        }
-
-        /* --- MECHANICAL PANEL --- */
-        .panel-right {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            z-index: 10;
-        }
-
-        .sunken-tray-horizontal-barrel {
-            background-color: #beaa91;
-            width: 115px; height: 48px;
-            border-radius: 14px;
-            box-shadow: inset 2px 3px 6px rgba(0,0,0,0.4);
-            overflow: hidden;
-            display: flex; justify-content: center; align-items: center;
-            touch-action: none;
-        }
-
-        .horizontal-barrel-roller { width: 102px; height: 38px; border-radius: 8px; background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px); }
-
-        .giant-shutter-red {
-            width: 95px; height: 95px;
-            background-color: #ff3b30;
-            border: none; border-radius: 50%;
-            cursor: pointer;
-            box-shadow: inset 1px 2px 3px rgba(255,255,255,0.4), 0px 6px 12px rgba(0,0,0,0.45);
-            display: flex; justify-content: center; align-items: center;
-        }
-        .giant-shutter-red:active { transform: scale(0.95); box-shadow: 0px 2px 4px rgba(0,0,0,0.4); }
-
-        .shutter-cross-icon {
-            width: 22px; height: 4px; background-color: #ffffff; position: relative;
-        }
-        .shutter-cross-icon::before {
-            content: ""; width: 4px; height: 22px; background-color: #ffffff; position: absolute; top: -9px; left: 9px;
-        }
-
-        .right-action-cluster {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            font-size: 12px; display: none; z-index: 22;
         }
 
         /* --- DATA SHEET OVERLAY --- */
@@ -288,7 +243,7 @@
         #canvas-snapshot-output { width: 100%; height: 100%; object-fit: cover; background-color: #222; }
         .card-info-pane { display: flex; flex-direction: column; justify-content: space-between; }
         .card-header { font-size: 10px; color: #ff3b30; font-weight: bold; letter-spacing: 2px; }
-        .card-title { font-size: 18px; font-weight: 900; color: #fff; margin: 2px 0; }
+        .card-title { font-size: 19px; font-weight: 900; color: #fff; margin: 2px 0; }
         .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
         .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; margin-top: 5px; }
         .card-actions { display: flex; gap: 8px; margin-top: 10px; }
@@ -387,24 +342,24 @@
             <div class="viewfinder-viewport" id="viewport-frame">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
                 
-                <div class="calibration-hint" id="cal-hint">Tap screen to rotate angle</div>
+                <div class="calibration-hint" id="cal-hint">Tap screen to rotate lens view</div>
 
                 <div class="hud-center-stats">
                     <div class="hud-ticks">▪ ▪ ▪ ▪ ▪ <span style="color:#ff3b30;">▪</span> ▪ ▪ ▪ ▪</div>
-                    <div class="hud-label" id="hud-stat-label">SHUTTER SPEED</div>
-                    <div class="hud-main-value" id="hud-stat-value">1/210</div>
+                    <div class="hud-label" id="hud-stat-label">SCANNER CORE</div>
+                    <div class="hud-main-value" id="hud-stat-value">V3.7 PRO</div>
                 </div>
 
                 <div class="hud-bottom-bar">
-                    <div class="hud-pill-box" id="hud-lower-pill">♦ NATIVE LENS</div>
+                    <div class="hud-pill-box" id="hud-lower-pill">♦ NATIVE OPTICS</div>
                     <div class="hud-inline-metrics">
-                        <div>⚏ 18</div>
-                        <div>☀ 5440K</div>
+                        <div>⚏ 24mm</div>
+                        <div>☀ AUTO</div>
                         <div style="color:#ff3b30;">📊||ı|</div>
                     </div>
                 </div>
 
-                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER TARGET VALUES OVERRIDE ]">
+                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER SPECIMEN CHEAT NAME OR HINT ]">
 
                 <div class="hud-telemetry-overlay-card" id="result-overlay">
                     <div class="captured-polaroid-frame">
@@ -412,10 +367,10 @@
                     </div>
                     <div class="card-info-pane">
                         <div>
-                            <div class="card-header" id="res-header">Wildlife-dex V3.7 Diagnostic Stream</div>
-                            <div class="card-title" id="res-name">Specimen Active</div>
+                            <div class="card-header" id="res-header">SPECIES DIAGNOSTIC LOG</div>
+                            <div class="card-title" id="res-name">Specimen Profile</div>
                             <div class="card-sub" id="res-science">Taxonomy Branch</div>
-                            <div class="card-body" id="res-fact">Processing data loops...</div>
+                            <div class="card-body" id="res-fact">Processing...</div>
                         </div>
                         <div class="card-actions">
                             <button class="action-btn btn-save" id="btn-log-dex">＋ Register Entry</button>
@@ -469,206 +424,5 @@
                     audio: false 
                 })
                 .then(stream => { video.srcObject = stream; })
-                .catch(err => { console.log("Camera hardware alignment check.", err); });
+                .catch(err => { console.log("Camera hardware initialization check.", err); });
             }
-        }
-        window.addEventListener('load', bootUpCameraLens);
-
-        // --- 🔄 MULTI-ANGLE ADAPTIVE COMPENSATOR ---
-        let currentAngleIndex = 0;
-        const targetAngles = [0, 90, 180, 270];
-        
-        video.addEventListener('click', () => {
-            currentAngleIndex = (currentAngleIndex + 1) % targetAngles.length;
-            applyViewportTransforms();
-            document.getElementById('cal-hint').style.display = 'none';
-        });
-
-        function applyViewportTransforms() {
-            let angle = targetAngles[currentAngleIndex];
-            let rawScale = currentZoom;
-            
-            let frameWidth = viewportFrame.clientWidth;
-            let frameHeight = viewportFrame.clientHeight;
-            
-            if (angle === 90 || angle === 270) {
-                if (frameHeight > frameWidth) {
-                    rawScale = currentZoom * (frameHeight / frameWidth);
-                } else {
-                    rawScale = currentZoom * (frameWidth / frameHeight);
-                }
-            }
-            
-            video.style.transform = 'rotate(' + angle + 'deg) scale(' + rawScale + ')';
-            document.getElementById('hud-lower-pill').innerText = '♦ ' + angle + '° CALIBRATED';
-        }
-
-        window.addEventListener('resize', applyViewportTransforms);
-
-        // --- INTERFACE DIALS CONTROLS ---
-        let currentZoom = 1;
-        let zoomRotation = 0;
-        let startY = 0;
-
-        zoomWheel.addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; });
-        zoomWheel.addEventListener('touchmove', function(e) {
-            let deltaY = e.touches[0].clientY - startY;
-            if (Math.abs(deltaY) > 5) {
-                zoomRotation += deltaY * 0.4;
-                zoomGraphic.style.transform = 'rotateX(' + zoomRotation + 'deg)';
-                startY = e.touches[0].clientY;
-                currentZoom += deltaY > 0 ? -0.05 : 0.05;
-                currentZoom = Math.max(1, Math.min(4, currentZoom));
-                applyViewportTransforms();
-            }
-        });
-
-        let currentStatIndex = 0;
-        statWheel.addEventListener('click', function() {
-            currentStatIndex = (currentStatIndex + 1) % 3;
-            const labels = ["SHUTTER SPEED", "EXPOSURE VALUE", "ISO OPTICS"];
-            const values = ["1/210", "EV -0.7", "ISO 64"];
-            document.getElementById('hud-stat-label').innerText = labels[currentStatIndex];
-            document.getElementById('hud-stat-value').innerText = values[currentStatIndex];
-            statGraphic.style.transform = 'rotateY(' + (currentStatIndex * 60) + 'deg)';
-        });
-
-        // --- OVERRIDE SYSTEM ---
-        let isModeActive = false;
-        document.getElementById('btn-mode-m').addEventListener('click', function() {
-            isModeActive = !isModeActive;
-            document.getElementById('knob-left').style.left = isModeActive ? "71px" : "3px";
-            document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
-        });
-
-        // --- 📊 SCANNER ANALYSIS ENGINE ---
-        document.getElementById('shutter-trigger').addEventListener('click', function() {
-            const canvas = document.getElementById('canvas-snapshot-output');
-            const ctx = canvas.getContext('2d');
-            let angle = targetAngles[currentAngleIndex];
-            
-            if (angle === 90 || angle === 270) {
-                canvas.width = video.videoHeight || 480;
-                canvas.height = video.videoWidth || 640;
-            } else {
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
-            }
-            
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.scale(currentZoom, currentZoom);
-            ctx.translate(-canvas.width / 2, -canvas.height / 2);
-            
-            if (angle === 90 || angle === 270) {
-                ctx.drawImage(video, 0, 0, canvas.height, canvas.width);
-            } else {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            }
-            
-            let sampleX = Math.floor(canvas.width / 2);
-            let sampleY = Math.floor(canvas.height / 2);
-            let pixelData;
-            try {
-                pixelData = ctx.getImageData(sampleX, sampleY, 1, 1).data;
-            } catch(e) {
-                pixelData = [120, 110, 100, 255];
-            }
-            
-            let r = pixelData[0], g = pixelData[1], b = pixelData[2];
-            let avg = (r + g + b) / 3;
-            let variance = (Math.pow(r-avg, 2) + Math.pow(g-avg, 2) + Math.pow(b-avg, 2)) / 3;
-            let saturation = Math.sqrt(variance);
-
-            const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
-            
-            let detectedName = "White-Tailed Deer 🦊";
-            let detectedScience = "Odocoileus virginianus";
-            let detectedFact = "Native alert Texas herbivore detected inside forest cluster boundaries.";
-
-            if (rawIn.includes("woodpecker")) {
-                detectedName = "Pileated Woodpecker 🐦";
-                detectedScience = "Dryocopus pileatus";
-                detectedFact = "Crimson crest cap wood excavator.";
-            } else if (rawIn.includes("deer")) {
-                detectedName = "White-Tailed Deer 🦊";
-                detectedScience = "Odocoileus virginianus";
-                detectedFact = "Native alert Texas herbivore.";
-            } else if (saturation < 14) { 
-                detectedName = "Flat Surface / Floor 🗺️";
-                detectedScience = "Null Specimen Detected";
-                detectedFact = "The camera lens is targeting a floor, plain ceiling, or solid structural barrier.";
-            }
-
-            document.getElementById('res-name').innerText = detectedName;
-            document.getElementById('res-science').innerText = detectedScience;
-            document.getElementById('res-fact').innerText = detectedFact;
-            
-            currentScanPayload = {
-                name: detectedName,
-                science: detectedScience,
-                fact: detectedFact,
-                image: canvas.toDataURL('image/jpeg', 0.6)
-            };
-
-            document.getElementById('result-overlay').style.display = "grid";
-        });
-
-        // --- 🗃️ SAVING & STORAGE ENGINE ---
-        document.getElementById('btn-log-dex').addEventListener('click', function() {
-            if(!currentScanPayload) return;
-
-            let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
-            entries.unshift(currentScanPayload);
-            localStorage.setItem('wildlifeDexEntries', JSON.stringify(entries));
-
-            const saveBtn = document.getElementById('btn-log-dex');
-            saveBtn.innerText = "✓ Entry Registered!";
-            saveBtn.style.backgroundColor = "#4cd964";
-            saveBtn.style.color = "#ffffff";
-            
-            setTimeout(function() {
-                document.getElementById('result-overlay').style.display = "none";
-                saveBtn.innerText = "＋ Register Entry";
-                saveBtn.style.backgroundColor = "#ffffff";
-                saveBtn.style.color = "#000000";
-                currentScanPayload = null;
-            }, 1000);
-        });
-
-        document.getElementById('btn-close-card').addEventListener('click', function() {
-            document.getElementById('result-overlay').style.display = "none";
-            currentScanPayload = null;
-        });
-
-        // --- 📖 GALLERY OVERLAY SYSTEM ---
-        const dexGallery = document.getElementById('dex-gallery-screen');
-        const cardsContainer = document.getElementById('dex-cards-container');
-
-        document.getElementById('btn-open-dex').addEventListener('click', function() {
-            cardsContainer.innerHTML = "";
-            let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
-
-            if(entries.length === 0) {
-                cardsContainer.innerHTML = `<div class="empty-dex-notice">No specimens registered yet. Aim lens and snap your first creature card!</div>`;
-            } else {
-                entries.forEach(item => {
-                    let cardEl = document.createElement('div');
-                    cardEl.className = 'mini-polaroid-card';
-                    cardEl.innerHTML = `
-                        <img class="mini-polaroid-img" src="${item.image}">
-                        <div class="mini-polaroid-label">${item.name}</div>
-                    `;
-                    cardsContainer.appendChild(cardEl);
-                });
-            }
-
-            dexGallery.style.display = "flex";
-        });
-
-        document.getElementById('btn-close-gallery').addEventListener('click', function() {
-            dexGallery.style.display = "none";
-        });
-    </script>
-</body>
-</html>
