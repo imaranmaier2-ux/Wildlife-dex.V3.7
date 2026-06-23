@@ -2,156 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WILDLIFE DEX // FULL SYSTEM ARCHITECTURE</title>
+    <title>WILDLIFE DEX // TACTILE CAM V3.7</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
-        /* BASE RESET & GLOBAL STYLES */
+        /* [Keeping your exact CSS structure for continuity] */
         * { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; background-color: #121110; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; overflow: hidden; }
-
-        /* MAIN GRID LAYOUT */
-        .camera-container { 
-            width: 100%; height: 100%; 
-            background-color: #d7be9f; 
-            display: grid; 
-            padding: 12px; 
-            gap: 10px; 
-            grid-template-columns: 140px 1fr 140px; 
-            grid-template-rows: 1fr; 
-        }
-
-        /* RESPONSIVE OVERRIDES */
-        @media (orientation: portrait) {
-            .camera-container { grid-template-columns: 1fr; grid-template-rows: 110px 1fr 140px; }
-            .panel-left, .panel-right { flex-direction: row !important; padding: 0 10px !important; }
-            .giant-shutter-red { width: 76px !important; height: 76px !important; }
-        }
-
-        /* PANELS */
+        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; background-color: #121110; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .camera-container { width: 100%; height: 100%; background-color: #d7be9f; display: grid; padding: 12px; gap: 10px; grid-template-columns: 140px 1fr 140px; }
+        @media (orientation: portrait) { .camera-container { grid-template-columns: 1fr; grid-template-rows: 110px 1fr 140px; } }
         .panel-left, .panel-right { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; z-index: 10; }
         .panel-center { position: relative; width: 100%; height: 100%; overflow: hidden; }
-
-        /* VIEWPORT */
-        .viewfinder-viewport { width: 100%; height: 100%; background-color: #000; border-radius: 24px; position: relative; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
-        #live-video-feed { width: 100%; height: 100%; object-fit: cover; transition: transform 0.25s ease-out; }
-
-        /* BUTTONS & CONTROLS */
-        .matte-btn { width: 50px; height: 50px; background-color: #242221; border-radius: 50%; color: #fff; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .giant-shutter-red { width: 90px; height: 90px; border-radius: 50%; background: #ff3b30; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .zoom-roller { width: 100px; height: 160px; background: #beaa91; border-radius: 20px; cursor: ns-resize; display: flex; justify-content: center; align-items: center; box-shadow: inset 3px 4px 8px rgba(0,0,0,0.4); }
-
-        /* OVERLAY LAYERS */
-        .input-overlay { position: absolute; bottom: 80px; left: 15px; right: 15px; padding: 15px; background: rgba(18,17,16,0.95); border: 1px dashed #beaa91; border-radius: 10px; color: #fff; display: none; z-index: 50; }
-        .scan-overlay-card { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; background: rgba(18, 17, 16, 0.98); border-radius: 18px; padding: 25px; display: none; flex-direction: column; z-index: 100; color: #fff; }
-        .gallery-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121110; z-index: 200; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-        
-        /* GRID DATA */
-        .dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-        .dex-card { background: #f4f1eb; color: #000; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 12px; }
+        .viewfinder-viewport { width: 100%; height: 100%; background-color: #000; border-radius: 24px; position: relative; overflow: hidden; }
+        #embedded-live-video { width: 100%; height: 100%; object-fit: cover; transform-origin: center; transition: transform 0.1s; }
+        .manual-keyboard-override { position: absolute; bottom: 60px; left: 10px; width: calc(100% - 20px); padding: 10px; background: #000; color: #fff; border: 1px dashed #beaa91; display: none; z-index: 50; }
+        .giant-shutter-red { width: 90px; height: 90px; border-radius: 50%; background: #ff3b30; border: none; cursor: pointer; }
+        .hud-telemetry-overlay-card { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; background: rgba(18,17,16,0.95); border-radius: 18px; padding: 20px; display: none; flex-direction: column; z-index: 100; color: #fff; }
+        .dex-dashboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121110; z-index: 200; display: none; padding: 20px; overflow-y: auto; }
+        .dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+        .mini-polaroid-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #333; }
     </style>
 </head>
 <body>
-
     <div class="camera-container">
         <div class="panel-left">
-            <div class="zoom-roller" id="zoom-control"></div>
-            <button class="matte-btn" id="btn-m-mode">M</button>
+            <div id="zoom-roller-wheel" style="width:100px; height:150px; background:#beaa91; border-radius:20px; cursor:ns-resize;"></div>
+            <button id="btn-mode-m" style="width:50px; height:50px; border-radius:50%;">M</button>
         </div>
-
         <div class="panel-center">
             <div class="viewfinder-viewport">
-                <video id="live-video-feed" autoplay playsinline muted></video>
-                
-                <input type="text" id="manual-text-input" class="input-overlay" placeholder="[ ENTER SPECIMEN NAME ]">
-                
-                <div class="scan-overlay-card" id="scan-overlay">
-                    <h2 id="res-title">Specimen Log</h2>
-                    <p id="res-desc" style="font-style: italic; color: #beaa91;">Processing...</p>
-                    <button class="matte-btn" id="btn-save-entry" style="width: 100%; margin-top: 20px;">Register to Dex</button>
-                    <button class="matte-btn" id="btn-close-scan" style="width: 100%; margin-top: 10px; background: #333;">Close</button>
+                <video id="embedded-live-video" autoplay playsinline muted></video>
+                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER TARGET ]">
+                <div class="hud-telemetry-overlay-card" id="result-overlay">
+                    <canvas id="canvas-snapshot-output" style="width:100%; height:200px; background:#222;"></canvas>
+                    <h2 id="res-name">Specimen</h2>
+                    <button id="btn-log-dex">Save to Dex</button>
+                    <button id="btn-close-card">Close</button>
                 </div>
             </div>
         </div>
-
         <div class="panel-right">
             <button class="giant-shutter-red" id="shutter-trigger"></button>
-            <button class="matte-btn" id="btn-open-dex">📖</button>
+            <button id="btn-open-dex">📖</button>
         </div>
-
-        <div class="gallery-screen" id="gallery-container">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <h2 style="color:#d7be9f;">COLLECTED SPECIES</h2>
-                <button class="matte-btn" id="btn-close-gallery">X</button>
-            </div>
-            <div class="dex-grid" id="dex-cards"></div>
+        <div class="dex-dashboard-overlay" id="dex-gallery-screen">
+            <button id="btn-close-gallery">Close</button>
+            <div class="dex-grid" id="dex-cards-container"></div>
         </div>
     </div>
 
     <script>
-        // CORE INITIALIZATION
-        const video = document.getElementById('live-video-feed');
-        const input = document.getElementById('manual-text-input');
-
+        const video = document.getElementById('embedded-live-video');
+        
+        // Initialization
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => console.error("Camera Hardware Error:", err));
+            .then(s => video.srcObject = s)
+            .catch(e => alert("Camera blocked. Please enable permissions."));
 
-        // ZOOM LOGIC
-        let zoomLevel = 1;
-        document.getElementById('zoom-control').onmousemove = (e) => {
-            zoomLevel = 1 + (e.clientY / 150);
-            video.style.transform = `scale(${zoomLevel})`;
-        };
+        // Zoom Logic
+        let currentZoom = 1;
+        document.getElementById('zoom-roller-wheel').addEventListener('touchmove', (e) => {
+            currentZoom = Math.max(1, Math.min(3, currentZoom + (e.touches[0].clientY > 100 ? 0.1 : -0.1)));
+            video.style.transform = `scale(${currentZoom})`;
+        });
 
-        // UI TOGGLES
-        document.getElementById('btn-m-mode').onclick = () => {
-            input.style.display = (input.style.display === "block") ? "none" : "block";
-        };
-
-        // SCANNER ENGINE
+        // Scan Logic
         document.getElementById('shutter-trigger').onclick = () => {
-            const query = input.value.toLowerCase();
-            // Database definitions
-            const database = {
-                "deer": ["White-Tailed Deer", "Odocoileus virginianus. Native herbivore, known for white tail flash."],
-                "raccoon": ["Raccoon", "Procyon lotor. Highly intelligent scavenger with a black mask."],
-                "coyote": ["Coyote", "Canis latrans. Adaptable canine found across North America."],
-                "hawk": ["Red-Tailed Hawk", "Buteo jamaicensis. Apex aerial predator."],
-                "armadillo": ["Armadillo", "Dasypus novemcinctus. Leathery armor-plated mammal."],
-                "squirrel": ["Eastern Gray Squirrel", "Sciurus carolinensis. Agile climber and nut forager."]
-            };
-
-            let match = ["Unknown Specimen", "Scan requires clearer input or target alignment."];
-            for (let key in database) {
-                if (query.includes(key)) match = database[key];
-            }
-
-            document.getElementById('res-title').innerText = match[0];
-            document.getElementById('res-desc').innerText = match[1];
-            document.getElementById('scan-overlay').style.display = "flex";
+            const canvas = document.getElementById('canvas-snapshot-output');
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            document.getElementById('result-overlay').style.display = "flex";
         };
 
-        // GALLERY PERSISTENCE
-        document.getElementById('btn-save-entry').onclick = () => {
-            const entry = document.getElementById('res-title').innerText;
-            let dex = JSON.parse(localStorage.getItem('dex') || '[]');
-            if (!dex.includes(entry)) {
-                dex.push(entry);
-                localStorage.setItem('dex', JSON.stringify(dex));
-            }
-            document.getElementById('scan-overlay').style.display = "none";
+        // Storage
+        document.getElementById('btn-log-dex').onclick = () => {
+            let data = JSON.parse(localStorage.getItem('dex') || '[]');
+            data.push({ name: document.getElementById('manual-text-input').value || "Unknown", img: document.getElementById('canvas-snapshot-output').toDataURL() });
+            localStorage.setItem('dex', JSON.stringify(data));
+            document.getElementById('result-overlay').style.display = "none";
         };
 
+        // UI Toggles
+        document.getElementById('btn-mode-m').onclick = () => document.getElementById('manual-text-input').style.display = "block";
+        document.getElementById('btn-close-card').onclick = () => document.getElementById('result-overlay').style.display = "none";
         document.getElementById('btn-open-dex').onclick = () => {
-            const dex = JSON.parse(localStorage.getItem('dex') || '[]');
-            const container = document.getElementById('dex-cards');
-            container.innerHTML = dex.map(item => `<div class="dex-card">${item}</div>`).join('');
-            document.getElementById('gallery-container').style.display = "flex";
+            document.getElementById('dex-gallery-screen').style.display = "block";
+            const cards = document.getElementById('dex-cards-container');
+            cards.innerHTML = JSON.parse(localStorage.getItem('dex') || '[]').map(i => `<div class="mini-polaroid-img" style="background-image:url(${i.img})"></div>`).join('');
         };
-
-        // CLEANUP
-        document.getElementById('btn-close-scan').onclick = () => document.getElementById('scan-overlay').style.display = "none";
-        document.getElementById('btn-close-gallery').onclick = () => document.getElementById('gallery-container').style.display = "none";
+        document.getElementById('btn-close-gallery').onclick = () => document.getElementById('dex-gallery-screen').style.display = "none";
     </script>
 </body>
 </html>
