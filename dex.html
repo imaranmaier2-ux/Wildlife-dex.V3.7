@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WILDLIFE DEX // TACTILE CAM V3.7.1-BUILD-REFRESH</title>
+    <title>WILDLIFE DEX // TACTILE CAM V3.7.2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         * {
@@ -240,4 +240,189 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
-        #canvas-snapshot-output { width: 1
+        #canvas-snapshot-output { width: 100%; height: 100%; object-fit: cover; background-color: #222; }
+        .card-info-pane { display: flex; flex-direction: column; justify-content: space-between; }
+        .card-header { font-size: 10px; color: #ff3b30; font-weight: bold; letter-spacing: 2px; }
+        .card-title { font-size: 19px; font-weight: 900; color: #fff; margin: 2px 0; }
+        .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
+        .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; margin-top: 5px; }
+        .card-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .action-btn { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; transition: background 0.2s; }
+        .btn-save { background-color: #ffffff; color: #000; }
+        .btn-save:active { background-color: #4cd964; color: #fff; }
+        .btn-reset { background-color: #333; color: #fff; }
+
+        /* --- 📖 WILDLIFE DEX GALLERY SCREEN --- */
+        .dex-dashboard-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #121110;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .dex-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #beaa91;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dex-title {
+            color: #d7be9f;
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .dex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+            padding-bottom: 40px;
+        }
+
+        .mini-polaroid-card {
+            background-color: #f4f1eb;
+            padding: 6px 6px 18px 6px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 2px;
+        }
+
+        .mini-polaroid-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background-color: #333;
+        }
+
+        .mini-polaroid-label {
+            color: #121110;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .empty-dex-notice {
+            color: #beaa91;
+            text-align: center;
+            font-size: 13px;
+            font-style: italic;
+            grid-column: 1 / -1;
+            padding: 4px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="camera-container">
+        
+        <div class="panel-left">
+            <div class="sunken-tray-horizontal">
+                <div class="black-knob-slider" id="knob-left"></div>
+            </div>
+            <div class="sunken-tray-vertical-barrel" id="zoom-roller-wheel">
+                <div class="vertical-barrel-roller" id="zoom-barrel-graphic"></div>
+            </div>
+            <button class="matte-round-btn" id="btn-mode-m">M</button>
+        </div>
+
+        <div class="panel-center">
+            <div class="viewfinder-viewport" id="viewport-frame">
+                <video id="embedded-live-video" autoplay playsinline muted></video>
+                
+                <div class="calibration-hint" id="cal-hint">Tap screen to rotate lens view</div>
+
+                <div class="hud-center-stats">
+                    <div class="hud-ticks">▪ ▪ ▪ ▪ ▪ <span style="color:#ff3b30;">▪</span> ▪ ▪ ▪ ▪</div>
+                    <div class="hud-label" id="hud-stat-label">SCANNER CORE</div>
+                    <div class="hud-main-value" id="hud-stat-value">V3.7 PRO</div>
+                </div>
+
+                <div class="hud-bottom-bar">
+                    <div class="hud-pill-box" id="hud-lower-pill">♦ NATIVE OPTICS</div>
+                    <div class="hud-inline-metrics">
+                        <div>⚏ 24mm</div>
+                        <div>☀ AUTO</div>
+                        <div style="color:#ff3b30;">📊||ı|</div>
+                    </div>
+                </div>
+
+                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER SPECIMEN CHEAT NAME OR HINT ]">
+
+                <div class="hud-telemetry-overlay-card" id="result-overlay">
+                    <div class="captured-polaroid-frame">
+                        <canvas id="canvas-snapshot-output"></canvas>
+                    </div>
+                    <div class="card-info-pane">
+                        <div>
+                            <div class="card-header" id="res-header">SPECIES DIAGNOSTIC LOG</div>
+                            <div class="card-title" id="res-name">Specimen Profile</div>
+                            <div class="card-sub" id="res-science">Taxonomy Branch</div>
+                            <div class="card-body" id="res-fact">Processing...</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn btn-save" id="btn-log-dex">＋ Register Entry</button>
+                            <button class="action-btn btn-reset" id="btn-close-card">✖ Resume Stream</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dex-dashboard-overlay" id="dex-gallery-screen">
+                    <div class="dex-header-bar">
+                        <div class="dex-title">📖 COLLECTED WILDLIFE INDEX</div>
+                        <button class="action-btn btn-reset" id="btn-close-gallery" style="max-width: 90px; padding: 6px 12px;">✕ Close</button>
+                    </div>
+                    <div class="dex-grid" id="dex-cards-container">
+                        </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
+                <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
+            </div>
+            
+            <button class="giant-shutter-red" id="shutter-trigger">
+                <div class="shutter-cross-icon"></div>
+            </button>
+            
+            <div class="right-action-cluster">
+                <button class="matte-round-btn" id="btn-open-dex" style="background-color: #beaa91; color: #121110;">📖</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const video = document.getElementById('embedded-live-video');
+        const zoomWheel = document.getElementById('zoom-roller-wheel');
+        const zoomGraphic = document.getElementById('zoom-barrel-graphic');
+        const statWheel = document.getElementById('stat-roller-wheel');
+        const statGraphic = document.getElementById('stat-barrel-graphic');
+        const viewportFrame = document.getElementById('viewport-frame');
+
+        let currentScanPayload = null;
+
+        function bootUpCameraLens() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
+                    audio: false 
+                })
+                .then(stream => { video.srcObject = stream; })
+                .catch(err => { console.log("Camera hardware initialization check.", err); });
+            }
