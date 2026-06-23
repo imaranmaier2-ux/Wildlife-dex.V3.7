@@ -16,9 +16,8 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            /* Fixes the Safari shift bug by locking to Dynamic Viewport Height */
             height: 100vh;
-            height: 100dvh; 
+            height: 100dvh; /* Fixes Safari's camera permission bar shifting elements down */
             background-color: #121110;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Helvetica, Arial, sans-serif;
             overflow: hidden;
@@ -27,27 +26,63 @@
             align-items: center;
         }
 
-        /* Viewport Frame - Uses dynamic constraints to prevent elements cutting off */
+        /* Responsive Grid Framework: Automatically flips cleanly based on device position */
         .camera-container {
             width: 100%;
             height: 100%;
             background-color: #d7be9f;
             display: grid;
-            grid-template-columns: 1fr;
-            grid-template-rows: 120px 1fr 130px;
-            padding: 10px;
+            padding: 12px;
             position: relative;
+            gap: 10px;
+            /* LANDSCAPE DEFAULTS (When holding phone sideways) */
+            grid-template-columns: 140px 1fr 140px;
+            grid-template-rows: 1fr;
         }
 
-        /* --- TOP CONTROL PANEL --- */
+        /* PORTRAIT OVERRIDES (If holding phone vertically) */
+        @media (orientation: portrait) {
+            .camera-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 110px 1fr 120px;
+            }
+            .panel-left {
+                flex-direction: row !important;
+                width: 100% !important;
+                height: 100% !important;
+                padding: 0 10px !important;
+            }
+            .panel-right {
+                flex-direction: row-reverse !important;
+                width: 100% !important;
+                height: 100% !important;
+                padding: 0 10px !important;
+            }
+            .sunken-tray-vertical-barrel {
+                width: 120px !important;
+                height: 46px !important;
+            }
+            .vertical-barrel-roller {
+                width: 106px !important;
+                height: 34px !important;
+                background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px) !important;
+            }
+            .giant-shutter-red {
+                width: 76px !important;
+                height: 76px !important;
+            }
+            .right-lower-combo {
+                width: auto !important;
+            }
+        }
+
+        /* --- MECHANICAL PANEL (LEFT / TOP) --- */
         .panel-left {
             display: flex;
-            flex-direction: row !important;
+            flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
-            height: 100%;
-            padding: 0 10px;
+            padding: 10px 0;
             z-index: 10;
         }
 
@@ -73,24 +108,22 @@
 
         .sunken-tray-vertical-barrel {
             background-color: #beaa91;
-            width: 130px;
-            height: 52px;
+            width: 110px;
+            height: 160px;
             border-radius: 24px;
             box-shadow: inset 3px 4px 8px rgba(0,0,0,0.4);
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
             touch-action: none;
         }
 
         .vertical-barrel-roller {
-            width: 116px;
-            height: 42px;
-            border-radius: 12px;
-            background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px);
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            width: 94px;
+            height: 144px;
+            border-radius: 16px;
+            background: repeating-linear-gradient(0deg, #c5c5c5 0px, #c5c5c5 12px, #ffffff 12px, #ffffff 14px, #a3a3a3 14px, #a3a3a3 20px);
         }
 
         .dual-buttons-row {
@@ -99,20 +132,18 @@
         }
 
         .matte-round-btn {
-            width: 44px; height: 44px;
+            width: 46px; height: 46px;
             background-color: #242221;
             border: none; border-radius: 50%;
             color: #ffffff; font-size: 15px; font-weight: bold;
             display: flex; justify-content: center; align-items: center;
-            cursor: pointer;
             box-shadow: 2px 4px 8px rgba(0,0,0,0.4), inset 0px 1px 1px #666;
         }
 
-        /* --- CENTER PANEL (STABLE VIEWPORT) --- */
+        /* --- VIEWFINDER CENTER PANEL --- */
         .panel-center {
             position: relative;
             width: 100%; height: 100%;
-            padding: 2px;
             overflow: hidden;
         }
 
@@ -125,14 +156,12 @@
             box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
         }
 
-        /* Rotates and fits the camera stream to be upright in vertical mode */
+        /* Native unrotated display - scale responds cleanly to the camera aspect ratio */
         #embedded-live-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: rotate(90deg) scale(1.4); 
-            transform-origin: center center;
-            transition: filter 0.3s ease;
+            transition: transform 0.1s ease, filter 0.3s ease;
         }
 
         .hud-center-stats {
@@ -147,7 +176,7 @@
 
         .hud-ticks { font-size: 14px; letter-spacing: 5px; opacity: 0.6; margin-bottom: 2px; }
         .hud-label { font-size: 10px; font-weight: bold; letter-spacing: 2px; opacity: 0.8; }
-        .hud-main-value { font-size: 24px; font-weight: 900; margin-top: 1px; }
+        .hud-main-value { font-size: 24px; font-weight: 900; }
 
         .hud-bottom-bar {
             position: absolute;
@@ -180,15 +209,13 @@
             font-size: 11px; display: none; z-index: 12;
         }
 
-        /* --- BOTTOM CONTROL PANEL --- */
+        /* --- MECHANICAL PANEL (RIGHT / BOTTOM) --- */
         .panel-right {
             display: flex;
-            flex-direction: row-reverse !important;
+            flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
-            height: 100%;
-            padding: 0 10px;
+            padding: 10px 0;
             z-index: 10;
         }
 
@@ -209,7 +236,7 @@
         }
 
         .giant-shutter-red {
-            width: 85px; height: 85px;
+            width: 95px; height: 95px;
             background-color: #ff3b30;
             border: none; border-radius: 50%;
             cursor: pointer;
@@ -226,13 +253,13 @@
         }
 
         .right-lower-combo {
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: center; gap: 8px; width: 120px; justify-content: center;
         }
         .dots-track { display: flex; gap: 4px; }
         .dot { width: 5px; height: 5px; background-color: #8b7761; border-radius: 50%; }
         .dot.active { background-color: #ffffff; }
 
-        /* --- POPUP CARD --- */
+        /* --- TELEMETRY SNAPSHOT POPUP CARD --- */
         .hud-telemetry-overlay-card {
             position: absolute;
             top: 10px; bottom: 10px; left: 10px; right: 10px;
@@ -246,11 +273,19 @@
             z-index: 100;
         }
 
+        @media (min-width: 601px) {
+            .hud-telemetry-overlay-card {
+                grid-template-columns: 150px 1fr;
+                grid-template-rows: 1fr;
+            }
+        }
+
         .captured-polaroid-frame {
             width: 100%; height: 100%;
             background-color: #f4f1eb;
-            padding: 6px 6px 20px 6px;
+            padding: 6px 6px 22px 6px;
             display: flex; flex-direction: column;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         }
 
         #canvas-snapshot-output {
@@ -280,7 +315,6 @@
 
     <div class="camera-container">
         
-        <!-- TOP ROW PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -294,7 +328,6 @@
             </div>
         </div>
 
-        <!-- STABLE VIEWFINDER -->
         <div class="panel-center">
             <div class="viewfinder-viewport">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
@@ -336,7 +369,6 @@
             </div>
         </div>
 
-        <!-- BOTTOM ROW PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
@@ -371,12 +403,12 @@
                     audio: false 
                 })
                 .then(stream => { video.srcObject = stream; })
-                .catch(err => { console.log("Camera pending.", err); });
+                .catch(err => { console.log("Camera engine startup check.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- INTERFACE DIALS CONTROLS ---
+        // --- DIALS CONTROLS ---
         let currentZoom = 1;
         let zoomRotation = 0;
         let startY = 0;
@@ -390,7 +422,7 @@
                 startY = e.touches[0].clientY;
                 currentZoom += deltaY > 0 ? -0.05 : 0.05;
                 currentZoom = Math.max(1, Math.min(4, currentZoom));
-                video.style.transform = `rotate(90deg) scale(${(currentZoom * 1.4).toFixed(2)})`;
+                video.style.transform = `scale(${currentZoom.toFixed(2)})`;
                 document.getElementById('hud-lower-pill').innerText = `♦ ZOOM ${currentZoom.toFixed(1)}X`;
             }
         });
@@ -416,7 +448,7 @@
         document.getElementById('btn-filters').addEventListener('click', cycleFilters);
         document.getElementById('btn-filter-toggle').addEventListener('click', cycleFilters);
 
-        // --- MANUAL OVERRIDE ---
+        // --- OVERRIDE SYSTEM ---
         let isModeActive = false;
         document.getElementById('btn-mode-m').addEventListener('click', () => {
             isModeActive = !isModeActive;
@@ -424,21 +456,20 @@
             document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
         });
 
-        // --- CAPTURE FIX FOR ROTATED CANVAS ---
+        // --- PHOTO SNAPSHOT GENERATION ---
         document.getElementById('shutter-trigger').addEventListener('click', () => {
             const canvas = document.getElementById('canvas-snapshot-output');
             const ctx = canvas.getContext('2d');
             
-            // Swap canvas aspect layout parameters to natively match the 90deg view turn
-            canvas.width = video.videoHeight || 480;
-            canvas.height = video.videoWidth || 640;
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
             
             ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(90 * Math.PI / 180);
+            ctx.scale(currentZoom, currentZoom);
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
             
             ctx.filter = getComputedStyle(video).filter;
-            ctx.drawImage(video, 0, 0, canvas.height, canvas.width);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
             if (rawIn.includes("woodpecker")) {
