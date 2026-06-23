@@ -17,7 +17,7 @@
             padding: 0;
             width: 100%;
             height: 100vh;
-            height: 100dvh; /* Fixes Safari's camera permission bar shifting elements down */
+            height: 100dvh;
             background-color: #121110;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Helvetica, Arial, sans-serif;
             overflow: hidden;
@@ -26,7 +26,6 @@
             align-items: center;
         }
 
-        /* Responsive Grid Framework: Automatically flips cleanly based on device position */
         .camera-container {
             width: 100%;
             height: 100%;
@@ -35,12 +34,10 @@
             padding: 12px;
             position: relative;
             gap: 10px;
-            /* LANDSCAPE DEFAULTS (When holding phone sideways) */
             grid-template-columns: 140px 1fr 140px;
             grid-template-rows: 1fr;
         }
 
-        /* PORTRAIT OVERRIDES (If holding phone vertically) */
         @media (orientation: portrait) {
             .camera-container {
                 grid-template-columns: 1fr;
@@ -70,9 +67,6 @@
             .giant-shutter-red {
                 width: 76px !important;
                 height: 76px !important;
-            }
-            .right-lower-combo {
-                width: auto !important;
             }
         }
 
@@ -108,28 +102,21 @@
 
         .sunken-tray-vertical-barrel {
             background-color: #beaa91;
-            width: 110px;
-            height: 160px;
+            width: 110px; height: 160px;
             border-radius: 24px;
             box-shadow: inset 3px 4px 8px rgba(0,0,0,0.4);
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             touch-action: none;
         }
 
         .vertical-barrel-roller {
-            width: 94px;
-            height: 144px;
+            width: 94px; height: 144px;
             border-radius: 16px;
             background: repeating-linear-gradient(0deg, #c5c5c5 0px, #c5c5c5 12px, #ffffff 12px, #ffffff 14px, #a3a3a3 14px, #a3a3a3 20px);
         }
 
-        .dual-buttons-row {
-            display: flex;
-            gap: 10px;
-        }
+        .dual-buttons-row { display: flex; gap: 10px; }
 
         .matte-round-btn {
             width: 46px; height: 46px;
@@ -156,12 +143,25 @@
             box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
         }
 
-        /* Native unrotated display - scale responds cleanly to the camera aspect ratio */
         #embedded-live-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.1s ease, filter 0.3s ease;
+            transform-origin: center center;
+            transition: transform 0.2s cubic-bezier(0.1, 0.8, 0.3, 1), filter 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Calibration Target Overlay Hint */
+        .calibration-hint {
+            position: absolute;
+            top: 70px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: #fff; font-size: 10px; font-weight: bold;
+            padding: 4px 8px; border-radius: 4px;
+            pointer-events: none; letter-spacing: 1px;
+            opacity: 0.7;
         }
 
         .hud-center-stats {
@@ -194,10 +194,7 @@
             backdrop-filter: blur(5px);
         }
 
-        .hud-inline-metrics {
-            display: flex; gap: 12px;
-            font-size: 11px; font-weight: bold; color: white;
-        }
+        .hud-inline-metrics { display: flex; gap: 12px; font-size: 11px; font-weight: bold; color: white; }
 
         .manual-keyboard-override {
             width: calc(100% - 30px);
@@ -229,11 +226,7 @@
             touch-action: none;
         }
 
-        .horizontal-barrel-roller {
-            width: 102px; height: 38px;
-            border-radius: 8px;
-            background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px);
-        }
+        .horizontal-barrel-roller { width: 102px; height: 38px; border-radius: 8px; background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px); }
 
         .giant-shutter-red {
             width: 95px; height: 95px;
@@ -248,18 +241,15 @@
             width: 22px; height: 4px; background-color: #ffffff; position: relative;
         }
         .shutter-cross-icon::before {
-            content: ""; width: 4px; height: 22px; background-color: #ffffff;
-            position: absolute; top: -9px; left: 9px;
+            content: ""; width: 4px; height: 22px; background-color: #ffffff; position: absolute; top: -9px; left: 9px;
         }
 
-        .right-lower-combo {
-            display: flex; align-items: center; gap: 8px; width: 120px; justify-content: center;
-        }
+        .right-lower-combo { display: flex; align-items: center; gap: 8px; width: 120px; justify-content: center; }
         .dots-track { display: flex; gap: 4px; }
         .dot { width: 5px; height: 5px; background-color: #8b7761; border-radius: 50%; }
         .dot.active { background-color: #ffffff; }
 
-        /* --- TELEMETRY SNAPSHOT POPUP CARD --- */
+        /* --- POPUP DATA CARD --- */
         .hud-telemetry-overlay-card {
             position: absolute;
             top: 10px; bottom: 10px; left: 10px; right: 10px;
@@ -274,10 +264,7 @@
         }
 
         @media (min-width: 601px) {
-            .hud-telemetry-overlay-card {
-                grid-template-columns: 150px 1fr;
-                grid-template-rows: 1fr;
-            }
+            .hud-telemetry-overlay-card { grid-template-columns: 150px 1fr; grid-template-rows: 1fr; }
         }
 
         .captured-polaroid-frame {
@@ -285,28 +272,16 @@
             background-color: #f4f1eb;
             padding: 6px 6px 22px 6px;
             display: flex; flex-direction: column;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         }
 
-        #canvas-snapshot-output {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            background-color: #222;
-        }
-
-        .card-info-pane {
-            display: flex; flex-direction: column; justify-content: space-between;
-        }
+        #canvas-snapshot-output { width: 100%; height: 100%; object-fit: cover; background-color: #222; }
+        .card-info-pane { display: flex; flex-direction: column; justify-content: space-between; }
         .card-header { font-size: 10px; color: #ff3b30; font-weight: bold; letter-spacing: 2px; }
         .card-title { font-size: 18px; font-weight: 900; color: #fff; margin: 2px 0; }
         .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
         .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; }
-        
         .card-actions { display: flex; gap: 8px; }
-        .action-btn {
-            flex: 1; padding: 10px; border-radius: 6px; border: none;
-            font-weight: bold; font-size: 11px; cursor: pointer;
-        }
+        .action-btn { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
         .btn-save { background-color: #ffffff; color: #000; }
         .btn-reset { background-color: #333; color: #fff; }
     </style>
@@ -331,6 +306,8 @@
         <div class="panel-center">
             <div class="viewfinder-viewport">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
+                
+                <div class="calibration-hint" id="cal-hint">Tap screen to calibrate angle</div>
 
                 <div class="hud-center-stats">
                     <div class="hud-ticks">▪ ▪ ▪ ▪ ▪ <span style="color:#ff3b30;">▪</span> ▪ ▪ ▪ ▪</div>
@@ -339,7 +316,7 @@
                 </div>
 
                 <div class="hud-bottom-bar">
-                    <div class="hud-pill-box" id="hud-lower-pill">♦ 1/210</div>
+                    <div class="hud-pill-box" id="hud-lower-pill">♦ 0° ANGLE</div>
                     <div class="hud-inline-metrics">
                         <div>⚏ 18</div>
                         <div>☀ 5440K</div>
@@ -403,12 +380,33 @@
                     audio: false 
                 })
                 .then(stream => { video.srcObject = stream; })
-                .catch(err => { console.log("Camera engine startup check.", err); });
+                .catch(err => { console.log("Camera hardware response loop missed.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- DIALS CONTROLS ---
+        // --- 🔄 MULTI-ANGLE HARDWARE CALIBRATION ENGINE ---
+        let currentAngleIndex = 0;
+        const targetAngles = [0, 90, 180, 270];
+        
+        video.addEventListener('click', () => {
+            currentAngleIndex = (currentAngleIndex + 1) % targetAngles.length;
+            applyViewportTransforms();
+            
+            // Hide the hint overlay after they interact with it
+            document.getElementById('cal-hint').style.display = 'none';
+        });
+
+        function applyViewportTransforms() {
+            let angle = targetAngles[currentAngleIndex];
+            // When rotated 90 or 270, the aspect ratio reverses, so we scale up slightly to fill the viewport safely
+            let scaleFactor = (angle === 90 || angle === 270) ? (currentZoom * 1.5) : currentZoom;
+            
+            video.style.transform = `rotate(${angle}deg) scale(${scaleFactor})`;
+            document.getElementById('hud-lower-pill').innerText = `♦ ${angle}° ANGLE`;
+        }
+
+        // --- INTERFACE DIALS CONTROLS ---
         let currentZoom = 1;
         let zoomRotation = 0;
         let startY = 0;
@@ -422,8 +420,7 @@
                 startY = e.touches[0].clientY;
                 currentZoom += deltaY > 0 ? -0.05 : 0.05;
                 currentZoom = Math.max(1, Math.min(4, currentZoom));
-                video.style.transform = `scale(${currentZoom.toFixed(2)})`;
-                document.getElementById('hud-lower-pill').innerText = `♦ ZOOM ${currentZoom.toFixed(1)}X`;
+                applyViewportTransforms();
             }
         });
 
@@ -456,20 +453,32 @@
             document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
         });
 
-        // --- PHOTO SNAPSHOT GENERATION ---
+        // --- PHOTO SNAPSHOT CAPTURE MATRIX ---
         document.getElementById('shutter-trigger').addEventListener('click', () => {
             const canvas = document.getElementById('canvas-snapshot-output');
             const ctx = canvas.getContext('2d');
+            let angle = targetAngles[currentAngleIndex];
             
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
+            if (angle === 90 || angle === 270) {
+                canvas.width = video.videoHeight || 480;
+                canvas.height = video.videoWidth || 640;
+            } else {
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+            }
             
             ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(angle * Math.PI / 180);
             ctx.scale(currentZoom, currentZoom);
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
             
             ctx.filter = getComputedStyle(video).filter;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            if (angle === 90 || angle === 270) {
+                ctx.drawImage(video, 0, 0, canvas.height, canvas.width);
+            } else {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
             
             const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
             if (rawIn.includes("woodpecker")) {
