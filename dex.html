@@ -1,3 +1,8 @@
+Here is the complete, self-contained index.html code. It includes the auto-scaling mobile camera fixes, the browser saving engine (localStorage), and the new interactive 📖 Gallery button.
+
+Copy this code and paste it directly into your index.html file on GitHub to replace everything:
+
+HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -373,7 +378,6 @@
 
     <div class="camera-container">
         
-        <!-- LEFT CONTROL PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -384,7 +388,6 @@
             <button class="matte-round-btn" id="btn-mode-m">M</button>
         </div>
 
-        <!-- CENTER VIEWPORT -->
         <div class="panel-center">
             <div class="viewfinder-viewport" id="viewport-frame">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
@@ -408,7 +411,6 @@
 
                 <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER TARGET VALUES OVERRIDE ]">
 
-                <!-- LIVE CAPTURE DIAGNOSTIC CARD -->
                 <div class="hud-telemetry-overlay-card" id="result-overlay">
                     <div class="captured-polaroid-frame">
                         <canvas id="canvas-snapshot-output"></canvas>
@@ -427,21 +429,18 @@
                     </div>
                 </div>
 
-                <!-- 📖 THE KIDS COLLECTED ENTRIES GALLERY POPUP -->
                 <div class="dex-dashboard-overlay" id="dex-gallery-screen">
                     <div class="dex-header-bar">
                         <div class="dex-title">📖 COLLECTED WILDLIFE INDEX</div>
                         <button class="action-btn btn-reset" id="btn-close-gallery" style="max-width: 90px; padding: 6px 12px;">✕ Close</button>
                     </div>
                     <div class="dex-grid" id="dex-cards-container">
-                        <!-- Dynamic items spawn here -->
-                    </div>
+                        </div>
                 </div>
 
             </div>
         </div>
 
-        <!-- RIGHT CONTROL PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
@@ -451,7 +450,6 @@
                 <div class="shutter-cross-icon"></div>
             </button>
             
-            <!-- NEW INTERACTIVE TACTILE ACTION BUTTONS -->
             <div class="right-action-cluster">
                 <button class="matte-round-btn" id="btn-open-dex" style="background-color: #beaa91; color: #121110;">📖</button>
             </div>
@@ -467,7 +465,6 @@
         const statGraphic = document.getElementById('stat-barrel-graphic');
         const viewportFrame = document.getElementById('viewport-frame');
 
-        // Snapshot details cache data to capture payload safely
         let currentScanPayload = null;
 
         function bootUpCameraLens() {
@@ -612,12 +609,11 @@
             document.getElementById('res-science').innerText = detectedScience;
             document.getElementById('res-fact').innerText = detectedFact;
             
-            // Package the scan info into data stream safely
             currentScanPayload = {
                 name: detectedName,
                 science: detectedScience,
                 fact: detectedFact,
-                image: canvas.toDataURL('image/jpeg', 0.6) // Compress for easy storage limits
+                image: canvas.toDataURL('image/jpeg', 0.6)
             };
 
             document.getElementById('result-overlay').style.display = "grid";
@@ -627,13 +623,8 @@
         document.getElementById('btn-log-dex').addEventListener('click', function() {
             if(!currentScanPayload) return;
 
-            // Load existing Dex saves
             let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
-            
-            // Add the new animal data card
             entries.unshift(currentScanPayload);
-            
-            // Write to Local Storage
             localStorage.setItem('wildlifeDexEntries', JSON.stringify(entries));
 
             const saveBtn = document.getElementById('btn-log-dex');
@@ -655,12 +646,11 @@
             currentScanPayload = null;
         });
 
-        // --- 📖 DEX INDEX BOARD LOGIC ---
+        // --- 📖 GALLERY OVERLAY SYSTEM ---
         const dexGallery = document.getElementById('dex-gallery-screen');
         const cardsContainer = document.getElementById('dex-cards-container');
 
         document.getElementById('btn-open-dex').addEventListener('click', function() {
-            // Render index collection contents dynamically
             cardsContainer.innerHTML = "";
             let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
 
