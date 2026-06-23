@@ -41,7 +41,7 @@
         @media (orientation: portrait) {
             .camera-container {
                 grid-template-columns: 1fr;
-                grid-template-rows: 110px 1fr 120px;
+                grid-template-rows: 110px 1fr 140px;
             }
             .panel-left {
                 flex-direction: row !important;
@@ -54,6 +54,7 @@
                 width: 100% !important;
                 height: 100% !important;
                 padding: 0 10px !important;
+                gap: 15px;
             }
             .sunken-tray-vertical-barrel {
                 width: 120px !important;
@@ -67,6 +68,11 @@
             .giant-shutter-red {
                 width: 76px !important;
                 height: 76px !important;
+            }
+            .right-action-cluster {
+                flex-direction: row !important;
+                width: auto !important;
+                gap: 12px !important;
             }
         }
 
@@ -120,9 +126,14 @@
             width: 46px; height: 46px;
             background-color: #242221;
             border: none; border-radius: 50%;
-            color: #ffffff; font-size: 15px; font-weight: bold;
+            color: #ffffff; font-size: 14px; font-weight: bold;
             display: flex; justify-content: center; align-items: center;
             box-shadow: 2px 4px 8px rgba(0,0,0,0.4), inset 0px 1px 1px #666;
+            cursor: pointer;
+        }
+        .matte-round-btn:active {
+            transform: scale(0.96);
+            background-color: #1a1918;
         }
 
         /* --- VIEWFINDER VIEWPORT --- */
@@ -233,12 +244,19 @@
             box-shadow: inset 1px 2px 3px rgba(255,255,255,0.4), 0px 6px 12px rgba(0,0,0,0.45);
             display: flex; justify-content: center; align-items: center;
         }
+        .giant-shutter-red:active { transform: scale(0.95); box-shadow: 0px 2px 4px rgba(0,0,0,0.4); }
 
         .shutter-cross-icon {
             width: 22px; height: 4px; background-color: #ffffff; position: relative;
         }
         .shutter-cross-icon::before {
             content: ""; width: 4px; height: 22px; background-color: #ffffff; position: absolute; top: -9px; left: 9px;
+        }
+
+        .right-action-cluster {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         /* --- DATA SHEET OVERLAY --- */
@@ -250,20 +268,21 @@
             padding: 15px;
             display: none;
             grid-template-columns: 1fr;
-            grid-template-rows: 120px 1fr;
+            grid-template-rows: 140px 1fr;
             gap: 15px;
             z-index: 100;
         }
 
         @media (min-width: 601px) {
-            .hud-telemetry-overlay-card { grid-template-columns: 150px 1fr; grid-template-rows: 1fr; }
+            .hud-telemetry-overlay-card { grid-template-columns: 170px 1fr; grid-template-rows: 1fr; }
         }
 
         .captured-polaroid-frame {
             width: 100%; height: 100%;
             background-color: #f4f1eb;
-            padding: 6px 6px 22px 6px;
+            padding: 8px 8px 24px 8px;
             display: flex; flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
         #canvas-snapshot-output { width: 100%; height: 100%; object-fit: cover; background-color: #222; }
@@ -271,18 +290,90 @@
         .card-header { font-size: 10px; color: #ff3b30; font-weight: bold; letter-spacing: 2px; }
         .card-title { font-size: 18px; font-weight: 900; color: #fff; margin: 2px 0; }
         .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
-        .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; }
-        .card-actions { display: flex; gap: 8px; }
+        .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; margin-top: 5px; }
+        .card-actions { display: flex; gap: 8px; margin-top: 10px; }
         .action-btn { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; transition: background 0.2s; }
         .btn-save { background-color: #ffffff; color: #000; }
         .btn-save:active { background-color: #4cd964; color: #fff; }
         .btn-reset { background-color: #333; color: #fff; }
+
+        /* --- 📖 WILDLIFE DEX GALLERY SCREEN --- */
+        .dex-dashboard-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #121110;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .dex-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #beaa91;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dex-title {
+            color: #d7be9f;
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .dex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+            padding-bottom: 40px;
+        }
+
+        .mini-polaroid-card {
+            background-color: #f4f1eb;
+            padding: 6px 6px 18px 6px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 2px;
+        }
+
+        .mini-polaroid-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background-color: #333;
+        }
+
+        .mini-polaroid-label {
+            color: #121110;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .empty-dex-notice {
+            color: #beaa91;
+            text-align: center;
+            font-size: 13px;
+            font-style: italic;
+            grid-column: 1 / -1;
+            padding: 4px 0;
+        }
     </style>
 </head>
 <body>
 
     <div class="camera-container">
         
+        <!-- LEFT CONTROL PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -293,6 +384,7 @@
             <button class="matte-round-btn" id="btn-mode-m">M</button>
         </div>
 
+        <!-- CENTER VIEWPORT -->
         <div class="panel-center">
             <div class="viewfinder-viewport" id="viewport-frame">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
@@ -316,6 +408,7 @@
 
                 <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER TARGET VALUES OVERRIDE ]">
 
+                <!-- LIVE CAPTURE DIAGNOSTIC CARD -->
                 <div class="hud-telemetry-overlay-card" id="result-overlay">
                     <div class="captured-polaroid-frame">
                         <canvas id="canvas-snapshot-output"></canvas>
@@ -333,17 +426,35 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 📖 THE KIDS COLLECTED ENTRIES GALLERY POPUP -->
+                <div class="dex-dashboard-overlay" id="dex-gallery-screen">
+                    <div class="dex-header-bar">
+                        <div class="dex-title">📖 COLLECTED WILDLIFE INDEX</div>
+                        <button class="action-btn btn-reset" id="btn-close-gallery" style="max-width: 90px; padding: 6px 12px;">✕ Close</button>
+                    </div>
+                    <div class="dex-grid" id="dex-cards-container">
+                        <!-- Dynamic items spawn here -->
+                    </div>
+                </div>
+
             </div>
         </div>
 
+        <!-- RIGHT CONTROL PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
             </div>
+            
             <button class="giant-shutter-red" id="shutter-trigger">
                 <div class="shutter-cross-icon"></div>
             </button>
-            <div style="width:46px; height:46px;"></div>
+            
+            <!-- NEW INTERACTIVE TACTILE ACTION BUTTONS -->
+            <div class="right-action-cluster">
+                <button class="matte-round-btn" id="btn-open-dex" style="background-color: #beaa91; color: #121110;">📖</button>
+            </div>
         </div>
 
     </div>
@@ -355,6 +466,9 @@
         const statWheel = document.getElementById('stat-roller-wheel');
         const statGraphic = document.getElementById('stat-barrel-graphic');
         const viewportFrame = document.getElementById('viewport-frame');
+
+        // Snapshot details cache data to capture payload safely
+        let currentScanPayload = null;
 
         function bootUpCameraLens() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -382,12 +496,10 @@
             let angle = targetAngles[currentAngleIndex];
             let rawScale = currentZoom;
             
-            // Check current viewport container layout geometry
             let frameWidth = viewportFrame.clientWidth;
             let frameHeight = viewportFrame.clientHeight;
             
             if (angle === 90 || angle === 270) {
-                // If container is taller than wide (portrait phone), scale higher to completely seal borders
                 if (frameHeight > frameWidth) {
                     rawScale = currentZoom * (frameHeight / frameWidth);
                 } else {
@@ -399,7 +511,6 @@
             document.getElementById('hud-lower-pill').innerText = '♦ ' + angle + '° CALIBRATED';
         }
 
-        // Recalculate layout scales dynamically when phone rotates between portrait/landscape physical shapes
         window.addEventListener('resize', applyViewportTransforms);
 
         // --- INTERFACE DIALS CONTROLS ---
@@ -479,46 +590,99 @@
 
             const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
             
+            let detectedName = "White-Tailed Deer 🦊";
+            let detectedScience = "Odocoileus virginianus";
+            let detectedFact = "Native alert Texas herbivore detected inside forest cluster boundaries.";
+
             if (rawIn.includes("woodpecker")) {
-                document.getElementById('res-name').innerText = "Pileated Woodpecker 🐦";
-                document.getElementById('res-science').innerText = "Dryocopus pileatus";
-                document.getElementById('res-fact').innerText = "Crimson crest cap wood excavator.";
+                detectedName = "Pileated Woodpecker 🐦";
+                detectedScience = "Dryocopus pileatus";
+                detectedFact = "Crimson crest cap wood excavator.";
             } else if (rawIn.includes("deer")) {
-                document.getElementById('res-name').innerText = "White-Tailed Deer 🦊";
-                document.getElementById('res-science').innerText = "Odocoileus virginianus";
-                document.getElementById('res-fact').innerText = "Native alert Texas herbivore.";
+                detectedName = "White-Tailed Deer 🦊";
+                detectedScience = "Odocoileus virginianus";
+                detectedFact = "Native alert Texas herbivore.";
             } else if (saturation < 14) { 
-                document.getElementById('res-name').innerText = "Flat Surface / Floor 🗺️";
-                document.getElementById('res-science').innerText = "Null Specimen Detected";
-                document.getElementById('res-fact').innerText = "The camera lens is targeting a floor, plain ceiling, or solid structural barrier.";
-            } else {
-                document.getElementById('res-name').innerText = "White-Tailed Deer 🦊";
-                document.getElementById('res-science').innerText = "Odocoileus virginianus";
-                document.getElementById('res-fact').innerText = "Native alert Texas herbivore detected inside forest cluster boundaries.";
+                detectedName = "Flat Surface / Floor 🗺️";
+                detectedScience = "Null Specimen Detected";
+                detectedFact = "The camera lens is targeting a floor, plain ceiling, or solid structural barrier.";
             }
+
+            document.getElementById('res-name').innerText = detectedName;
+            document.getElementById('res-science').innerText = detectedScience;
+            document.getElementById('res-fact').innerText = detectedFact;
             
+            // Package the scan info into data stream safely
+            currentScanPayload = {
+                name: detectedName,
+                science: detectedScience,
+                fact: detectedFact,
+                image: canvas.toDataURL('image/jpeg', 0.6) // Compress for easy storage limits
+            };
+
             document.getElementById('result-overlay').style.display = "grid";
         });
 
-        // --- 🗃️ REGISTER ENTRY ACTION ---
+        // --- 🗃️ SAVING & STORAGE ENGINE ---
         document.getElementById('btn-log-dex').addEventListener('click', function() {
-            const saveBtn = document.getElementById('btn-log-dex');
-            const originalText = saveBtn.innerText;
+            if(!currentScanPayload) return;
+
+            // Load existing Dex saves
+            let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
             
+            // Add the new animal data card
+            entries.unshift(currentScanPayload);
+            
+            // Write to Local Storage
+            localStorage.setItem('wildlifeDexEntries', JSON.stringify(entries));
+
+            const saveBtn = document.getElementById('btn-log-dex');
             saveBtn.innerText = "✓ Entry Registered!";
             saveBtn.style.backgroundColor = "#4cd964";
             saveBtn.style.color = "#ffffff";
             
             setTimeout(function() {
                 document.getElementById('result-overlay').style.display = "none";
-                saveBtn.innerText = originalText;
+                saveBtn.innerText = "＋ Register Entry";
                 saveBtn.style.backgroundColor = "#ffffff";
                 saveBtn.style.color = "#000000";
+                currentScanPayload = null;
             }, 1000);
         });
 
         document.getElementById('btn-close-card').addEventListener('click', function() {
             document.getElementById('result-overlay').style.display = "none";
+            currentScanPayload = null;
+        });
+
+        // --- 📖 DEX INDEX BOARD LOGIC ---
+        const dexGallery = document.getElementById('dex-gallery-screen');
+        const cardsContainer = document.getElementById('dex-cards-container');
+
+        document.getElementById('btn-open-dex').addEventListener('click', function() {
+            // Render index collection contents dynamically
+            cardsContainer.innerHTML = "";
+            let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
+
+            if(entries.length === 0) {
+                cardsContainer.innerHTML = `<div class="empty-dex-notice">No specimens registered yet. Aim lens and snap your first creature card!</div>`;
+            } else {
+                entries.forEach(item => {
+                    let cardEl = document.createElement('div');
+                    cardEl.className = 'mini-polaroid-card';
+                    cardEl.innerHTML = `
+                        <img class="mini-polaroid-img" src="${item.image}">
+                        <div class="mini-polaroid-label">${item.name}</div>
+                    `;
+                    cardsContainer.appendChild(cardEl);
+                });
+            }
+
+            dexGallery.style.display = "flex";
+        });
+
+        document.getElementById('btn-close-gallery').addEventListener('click', function() {
+            dexGallery.style.display = "none";
         });
     </script>
 </body>
