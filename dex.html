@@ -1,3 +1,4 @@
+HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +71,7 @@
             }
         }
 
-        /* --- MECHANICAL PANEL (LEFT / TOP) --- */
+        /* --- PANELS --- */
         .panel-left {
             display: flex;
             flex-direction: column;
@@ -127,7 +128,7 @@
             box-shadow: 2px 4px 8px rgba(0,0,0,0.4), inset 0px 1px 1px #666;
         }
 
-        /* --- VIEWFINDER CENTER PANEL --- */
+        /* --- VIEWFINDER VIEWPORT --- */
         .panel-center {
             position: relative;
             width: 100%; height: 100%;
@@ -141,18 +142,14 @@
             position: relative;
             overflow: hidden;
             box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        /* Base video styles allow clean dimension swapping centering */
         #embedded-live-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            position: absolute;
-            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, filter 0.3s ease;
+            transform-origin: center center;
+            transition: transform 0.2s ease, filter 0.3s ease;
             cursor: pointer;
         }
 
@@ -252,7 +249,7 @@
         .dot { width: 5px; height: 5px; background-color: #8b7761; border-radius: 50%; }
         .dot.active { background-color: #ffffff; }
 
-        /* --- POPUP DATA CARD --- */
+        /* --- DATA SHEET OVERLAY --- */
         .hud-telemetry-overlay-card {
             position: absolute;
             top: 10px; bottom: 10px; left: 10px; right: 10px;
@@ -293,7 +290,6 @@
 
     <div class="camera-container">
         
-        <!-- LEFT CONTROL PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -307,12 +303,11 @@
             </div>
         </div>
 
-        <!-- VIEWFINDER DISPLAY PANEL -->
         <div class="panel-center">
-            <div class="viewfinder-viewport" id="viewport-box">
+            <div class="viewfinder-viewport">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
                 
-                <div class="calibration-hint" id="cal-hint">Tap screen to fix distortion</div>
+                <div class="calibration-hint" id="cal-hint">Tap screen to rotate angle</div>
 
                 <div class="hud-center-stats">
                     <div class="hud-ticks">▪ ▪ ▪ ▪ ▪ <span style="color:#ff3b30;">▪</span> ▪ ▪ ▪ ▪</div>
@@ -321,7 +316,7 @@
                 </div>
 
                 <div class="hud-bottom-bar">
-                    <div class="hud-pill-box" id="hud-lower-pill">♦ 0° CALIBRATION</div>
+                    <div class="hud-pill-box" id="hud-lower-pill">♦ NATIVE LENS</div>
                     <div class="hud-inline-metrics">
                         <div>⚏ 18</div>
                         <div>☀ 5440K</div>
@@ -351,7 +346,6 @@
             </div>
         </div>
 
-        <!-- RIGHT CONTROL PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
@@ -374,7 +368,6 @@
 
     <script>
         const video = document.getElementById('embedded-live-video');
-        const viewportBox = document.getElementById('viewport-box');
         const zoomWheel = document.getElementById('zoom-roller-wheel');
         const zoomGraphic = document.getElementById('zoom-barrel-graphic');
         const statWheel = document.getElementById('stat-roller-wheel');
@@ -387,12 +380,12 @@
                     audio: false 
                 })
                 .then(stream => { video.srcObject = stream; })
-                .catch(err => { console.log("Camera loop engine glitch resolution check.", err); });
+                .catch(err => { console.log("Camera engine connection status.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- 🔄 ADVANCED SAFARI FRAME RATIO TRANSFORMS ---
+        // --- 🔄 MULTI-ANGLE SYSTEM WITH NO-SQUISH ZOOM INTERSECTION ---
         let currentAngleIndex = 0;
         const targetAngles = [0, 90, 180, 270];
         
@@ -405,24 +398,15 @@
         function applyViewportTransforms() {
             let angle = targetAngles[currentAngleIndex];
             
+            // Re-render layout scale factor dynamically if flipped sideways to completely eliminate stretching
+            let rawScale = currentZoom;
             if (angle === 90 || angle === 270) {
-                // Swap viewport constraints to stop Safari scaling squash bugs
-                let vBoxWidth = viewportBox.clientWidth;
-                let vBoxHeight = viewportBox.clientHeight;
-                
-                video.style.width = `${vBoxHeight}px`;
-                video.style.height = `${vBoxWidth}px`;
-            } else {
-                video.style.width = '100%';
-                video.style.height = '100%';
+                rawScale = currentZoom * 1.75; 
             }
             
-            video.style.transform = `rotate(${angle}deg) scale(${currentZoom})`;
-            document.getElementById('hud-lower-pill').innerText = `♦ ${angle}° TRANSPOSED`;
+            video.style.transform = `rotate(${angle}deg) scale(${rawScale})`;
+            document.getElementById('hud-lower-pill').innerText = `♦ ${angle}° CALIBRATED`;
         }
-
-        // Handle resize layout corrections seamlessly
-        window.addEventListener('resize', applyViewportTransforms);
 
         // --- INTERFACE DIALS CONTROLS ---
         let currentZoom = 1;
@@ -471,7 +455,7 @@
             document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
         });
 
-        // --- PHOTO SNAPSHOT CAPTURE MATRIX ---
+        // --- SNAPSHOT GENERATOR ---
         document.getElementById('shutter-trigger').addEventListener('click', () => {
             const canvas = document.getElementById('canvas-snapshot-output');
             const ctx = canvas.getContext('2d');
@@ -489,7 +473,6 @@
             ctx.rotate(angle * Math.PI / 180);
             ctx.scale(currentZoom, currentZoom);
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
-            
             ctx.filter = getComputedStyle(video).filter;
             
             if (angle === 90 || angle === 270) {
