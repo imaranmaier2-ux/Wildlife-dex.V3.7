@@ -2,86 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WILDLIFE DEX // TACTILE V3.9</title>
+    <title>WILDLIFE DEX // TACTILE CAM V3.7.1-FULL-RESTORE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         * { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; background: #121110; font-family: -apple-system, BlinkMacSystemFont, sans-serif; overflow: hidden; }
-        
-        .camera-container {
-            display: grid;
-            grid-template-columns: 100px 1fr 100px;
-            width: 100%; height: 100%; padding: 10px; gap: 10px;
-        }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; background-color: #121110; font-family: -apple-system, BlinkMacSystemFont, sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; }
 
+        .camera-container { width: 100%; height: 100%; background-color: #d7be9f; display: grid; padding: 12px; position: relative; gap: 10px; grid-template-columns: 140px 1fr 140px; grid-template-rows: 1fr; }
         @media (orientation: portrait) {
-            .camera-container { grid-template-columns: 1fr; grid-template-rows: 80px 1fr 100px; }
-            .panel-left, .panel-right { flex-direction: row !important; }
+            .camera-container { grid-template-columns: 1fr; grid-template-rows: 110px 1fr 140px; }
+            .panel-left { flex-direction: row !important; width: 100% !important; height: 100% !important; padding: 0 10px !important; }
+            .panel-right { flex-direction: row-reverse !important; width: 100% !important; height: 100% !important; padding: 0 10px !important; gap: 15px; }
         }
 
-        .panel-left, .panel-right { display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-        .viewport-container { position: relative; background: #000; border-radius: 20px; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-
-        .btn-main { width: 60px; height: 60px; border-radius: 50%; border: none; background: #d7be9f; font-weight: bold; cursor: pointer; }
-        #shutter-trigger { background: #ff3b30; }
+        .panel-left { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; z-index: 10; }
+        .sunken-tray-vertical-barrel { background-color: #beaa91; width: 110px; height: 160px; border-radius: 24px; box-shadow: inset 3px 4px 8px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; touch-action: none; }
+        .vertical-barrel-roller { width: 94px; height: 144px; border-radius: 16px; background: repeating-linear-gradient(0deg, #c5c5c5 0px, #c5c5c5 12px, #ffffff 12px, #ffffff 14px, #a3a3a3 14px, #a3a3a3 20px); }
+        .matte-round-btn { width: 46px; height: 46px; background-color: #242221; border: none; border-radius: 50%; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 2px 4px 8px rgba(0,0,0,0.4); }
         
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; padding: 20px; color: #fff; z-index: 50; }
-        .input-field { width: 100%; padding: 15px; margin-top: 20px; border-radius: 10px; border: none; }
+        .panel-center { position: relative; width: 100%; height: 100%; overflow: hidden; }
+        .viewfinder-viewport { width: 100%; height: 100%; background-color: #000; border-radius: 24px; overflow: hidden; }
+        #embedded-live-video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+        
+        .manual-keyboard-override { width: calc(100% - 30px); position: absolute; bottom: 55px; left: 15px; background: #121110; border: 1px dashed #beaa91; color: #fff; padding: 10px; display: none; z-index: 22; }
+        .hud-telemetry-overlay-card { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; background: rgba(18, 17, 16, 0.98); border-radius: 18px; padding: 15px; display: none; z-index: 100; }
+        
+        .dex-dashboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121110; z-index: 200; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+        
+        .panel-right { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; }
+        .giant-shutter-red { width: 90px; height: 90px; border-radius: 50%; background: #ff3b30; border: none; }
     </style>
 </head>
 <body>
-
     <div class="camera-container">
         <div class="panel-left">
-            <button class="btn-main" id="btn-mode">M</button>
+            <div class="sunken-tray-vertical-barrel" id="zoom-roller"><div class="vertical-barrel-roller"></div></div>
+            <button class="matte-round-btn" id="btn-mode-m">M</button>
         </div>
-        <div class="viewport-container">
-            <video id="video" autoplay playsinline muted></video>
-            <div id="ui-overlay" class="overlay">
-                <h2 id="res-name">Scan Result</h2>
-                <p id="res-fact"></p>
-                <button class="btn-main" onclick="closeOverlay()">✕</button>
+        <div class="panel-center">
+            <div class="viewfinder-viewport">
+                <video id="video" autoplay playsinline muted></video>
+                <input type="text" id="manual-input" class="manual-keyboard-override" placeholder="[ ENTER SPECIMEN NAME ]">
+                <div class="hud-telemetry-overlay-card" id="overlay">
+                    <canvas id="canvas" style="width:100%; height:200px; background:#222;"></canvas>
+                    <h2 id="res-name" style="color:#fff;">Specimen</h2>
+                    <p id="res-fact" style="color:#beaa91;">Data...</p>
+                    <button class="matte-round-btn" id="btn-save">＋ Save</button>
+                    <button class="matte-round-btn" id="btn-close">✕</button>
+                </div>
             </div>
-            <input type="text" id="manual-input" class="input-field" style="display:none;" placeholder="Type animal name...">
         </div>
         <div class="panel-right">
-            <button class="btn-main" id="shutter-trigger">◉</button>
-            <button class="btn-main" id="btn-dex">📖</button>
+            <button class="giant-shutter-red" id="shutter"></button>
+            <button class="matte-round-btn" id="btn-dex">📖</button>
+        </div>
+        <div class="dex-dashboard-overlay" id="gallery">
+            <div class="dex-grid" id="cards"></div>
+            <button class="matte-round-btn" id="btn-close-dex">✕</button>
         </div>
     </div>
 
     <script>
         const video = document.getElementById('video');
         const input = document.getElementById('manual-input');
-        
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(s => video.srcObject = s);
+        let zoom = 1;
 
-        document.getElementById('btn-mode').onclick = () => input.style.display = (input.style.display === "none") ? "block" : "none";
-        
-        document.getElementById('shutter-trigger').onclick = () => {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => video.srcObject = s);
+
+        document.getElementById('zoom-roller').onmousemove = (e) => { zoom = 1 + (e.clientY / 100); video.style.transform = `scale(${zoom})`; };
+        document.getElementById('btn-mode-m').onclick = () => input.style.display = input.style.display === "block" ? "none" : "block";
+
+        document.getElementById('shutter').onclick = () => {
             const txt = input.value.toLowerCase();
-            let data = { name: "Unknown", fact: "No identification match." };
-            
-            const db = {
-                "deer": { name: "White-Tailed Deer", fact: "Native herbivore, flashes white tail when scared." },
-                "raccoon": { name: "Raccoon", fact: "Nocturnal scavenger with a bandit mask." },
-                "coyote": { name: "Coyote", fact: "Highly intelligent and adaptable canine." },
-                "hawk": { name: "Red-Tailed Hawk", fact: "Powerful raptor with keen vision." },
-                "armadillo": { name: "Armadillo", fact: "Only mammal with a protective armor shell." }
-            };
-
-            for (let key in db) {
-                if (txt.includes(key)) data = db[key];
-            }
-
-            document.getElementById('res-name').innerText = data.name;
-            document.getElementById('res-fact').innerText = data.fact;
-            document.getElementById('ui-overlay').style.display = "block";
+            const db = { "deer": ["White-Tailed Deer", "Flags white tail when alarmed."], "raccoon": ["Raccoon", "Nocturnal scavenger."], "coyote": ["Coyote", "Smart canine."], "hawk": ["Red-Tailed Hawk", "Raptor."], "armadillo": ["Armadillo", "Armor-plated."] };
+            let match = db[Object.keys(db).find(k => txt.includes(k))] || ["Unknown Specimen", "No match found."];
+            document.getElementById('res-name').innerText = match[0];
+            document.getElementById('res-fact').innerText = match[1];
+            document.getElementById('overlay').style.display = "block";
         };
 
-        function closeOverlay() { document.getElementById('ui-overlay').style.display = "none"; }
-    </script>
-</body>
-</html>
+        document.getElementById('btn-save').onclick = ()
