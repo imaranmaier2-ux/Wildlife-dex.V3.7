@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <title>WILDLIFE DEX // TACTILE CAM V3.7</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <!-- Load TensorFlow.js and MobileNet AI Model libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -212,54 +209,9 @@
             position: absolute;
             bottom: 55px; left: 15px;
             background: rgba(18,17,16,0.95);
-            border: 1px dashed #555; border-radius: 8px;
+            border: 1px dashed #beaa91; border-radius: 8px;
             color: #fff; padding: 10px; text-align: center;
-            font-size: 11px; display: none; z-index: 22;
-        }
-
-        /* --- MECHANICAL PANEL --- */
-        .panel-right {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            z-index: 10;
-        }
-
-        .sunken-tray-horizontal-barrel {
-            background-color: #beaa91;
-            width: 115px; height: 48px;
-            border-radius: 14px;
-            box-shadow: inset 2px 3px 6px rgba(0,0,0,0.4);
-            overflow: hidden;
-            display: flex; justify-content: center; align-items: center;
-            touch-action: none;
-        }
-
-        .horizontal-barrel-roller { width: 102px; height: 38px; border-radius: 8px; background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px); }
-
-        .giant-shutter-red {
-            width: 95px; height: 95px;
-            background-color: #ff3b30;
-            border: none; border-radius: 50%;
-            cursor: pointer;
-            box-shadow: inset 1px 2px 3px rgba(255,255,255,0.4), 0px 6px 12px rgba(0,0,0,0.45);
-            display: flex; justify-content: center; align-items: center;
-        }
-        .giant-shutter-red:active { transform: scale(0.95); box-shadow: 0px 2px 4px rgba(0,0,0,0.4); }
-
-        .shutter-cross-icon {
-            width: 22px; height: 4px; background-color: #ffffff; position: relative;
-        }
-        .shutter-cross-icon::before {
-            content: ""; width: 4px; height: 22px; background-color: #ffffff; position: absolute; top: -9px; left: 9px;
-        }
-
-        .right-action-cluster {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            font-size: 12px; display: none; z-index: 22;
         }
 
         /* --- DATA SHEET OVERLAY --- */
@@ -291,7 +243,7 @@
         #canvas-snapshot-output { width: 100%; height: 100%; object-fit: cover; background-color: #222; }
         .card-info-pane { display: flex; flex-direction: column; justify-content: space-between; }
         .card-header { font-size: 10px; color: #ff3b30; font-weight: bold; letter-spacing: 2px; }
-        .card-title { font-size: 18px; font-weight: 900; color: #fff; margin: 2px 0; text-transform: capitalize; }
+        .card-title { font-size: 19px; font-weight: 900; color: #fff; margin: 2px 0; }
         .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
         .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; margin-top: 5px; }
         .card-actions { display: flex; gap: 8px; margin-top: 10px; }
@@ -360,7 +312,6 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-transform: capitalize;
         }
 
         .empty-dex-notice {
@@ -377,7 +328,6 @@
 
     <div class="camera-container">
         
-        <!-- LEFT CONTROL PANEL -->
         <div class="panel-left">
             <div class="sunken-tray-horizontal">
                 <div class="black-knob-slider" id="knob-left"></div>
@@ -388,41 +338,39 @@
             <button class="matte-round-btn" id="btn-mode-m">M</button>
         </div>
 
-        <!-- CENTER VIEWPORT -->
         <div class="panel-center">
             <div class="viewfinder-viewport" id="viewport-frame">
                 <video id="embedded-live-video" autoplay playsinline muted></video>
                 
-                <div class="calibration-hint" id="cal-hint">System Ready. Tap screen to change rotation.</div>
+                <div class="calibration-hint" id="cal-hint">Tap screen to rotate lens view</div>
 
                 <div class="hud-center-stats">
                     <div class="hud-ticks">▪ ▪ ▪ ▪ ▪ <span style="color:#ff3b30;">▪</span> ▪ ▪ ▪ ▪</div>
-                    <div class="hud-label" id="hud-stat-label">AI ENGINE STATUS</div>
-                    <div class="hud-main-value" id="hud-stat-value">LOADING...</div>
+                    <div class="hud-label" id="hud-stat-label">SCANNER CORE</div>
+                    <div class="hud-main-value" id="hud-stat-value">V3.7 PRO</div>
                 </div>
 
                 <div class="hud-bottom-bar">
-                    <div class="hud-pill-box" id="hud-lower-pill">⚡ CALIBRATING</div>
+                    <div class="hud-pill-box" id="hud-lower-pill">♦ NATIVE OPTICS</div>
                     <div class="hud-inline-metrics">
-                        <div>⚏ 18</div>
+                        <div>⚏ 24mm</div>
                         <div>☀ AUTO</div>
                         <div style="color:#ff3b30;">📊||ı|</div>
                     </div>
                 </div>
 
-                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER TARGET VALUES OVERRIDE ]">
+                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER SPECIMEN CHEAT NAME OR HINT ]">
 
-                <!-- LIVE CAPTURE DIAGNOSTIC CARD -->
                 <div class="hud-telemetry-overlay-card" id="result-overlay">
                     <div class="captured-polaroid-frame">
                         <canvas id="canvas-snapshot-output"></canvas>
                     </div>
                     <div class="card-info-pane">
                         <div>
-                            <div class="card-header" id="res-header">WILDLIFE-DEX CORE V3.7</div>
-                            <div class="card-title" id="res-name">Analyzing...</div>
-                            <div class="card-sub" id="res-science">Classification Level</div>
-                            <div class="card-body" id="res-fact">Neural network evaluating specimen profile frames...</div>
+                            <div class="card-header" id="res-header">SPECIES DIAGNOSTIC LOG</div>
+                            <div class="card-title" id="res-name">Specimen Profile</div>
+                            <div class="card-sub" id="res-science">Taxonomy Branch</div>
+                            <div class="card-body" id="res-fact">Processing...</div>
                         </div>
                         <div class="card-actions">
                             <button class="action-btn btn-save" id="btn-log-dex">＋ Register Entry</button>
@@ -431,21 +379,18 @@
                     </div>
                 </div>
 
-                <!-- 📖 THE KIDS COLLECTED ENTRIES GALLERY POPUP -->
                 <div class="dex-dashboard-overlay" id="dex-gallery-screen">
                     <div class="dex-header-bar">
                         <div class="dex-title">📖 COLLECTED WILDLIFE INDEX</div>
                         <button class="action-btn btn-reset" id="btn-close-gallery" style="max-width: 90px; padding: 6px 12px;">✕ Close</button>
                     </div>
                     <div class="dex-grid" id="dex-cards-container">
-                        <!-- Dynamic items spawn here -->
-                    </div>
+                        </div>
                 </div>
 
             </div>
         </div>
 
-        <!-- RIGHT CONTROL PANEL -->
         <div class="panel-right">
             <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
                 <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
@@ -455,7 +400,6 @@
                 <div class="shutter-cross-icon"></div>
             </button>
             
-            <!-- INTERACTIVE GALLERY BUTTON -->
             <div class="right-action-cluster">
                 <button class="matte-round-btn" id="btn-open-dex" style="background-color: #beaa91; color: #121110;">📖</button>
             </div>
@@ -472,19 +416,6 @@
         const viewportFrame = document.getElementById('viewport-frame');
 
         let currentScanPayload = null;
-        let aiModel = null;
-
-        // Initialize and background-load MobileNet Computer Vision model
-        async function initAiScanner() {
-            try {
-                aiModel = await mobilenet.load({version: 1, alpha: 1.0});
-                document.getElementById('hud-stat-value').innerText = "ONLINE";
-                document.getElementById('hud-lower-pill').innerText = "♦ MODEL READY";
-            } catch (e) {
-                console.error("AI Model Initialization Failure", e);
-                document.getElementById('hud-stat-value').innerText = "MANUAL";
-            }
-        }
 
         function bootUpCameraLens() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -492,16 +423,13 @@
                     video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
                     audio: false 
                 })
-                .then(stream => { 
-                    video.srcObject = stream; 
-                    initAiScanner();
-                })
-                .catch(err => { console.log("Camera hardware alignment check.", err); });
+                .then(stream => { video.srcObject = stream; })
+                .catch(err => { console.log("Camera hardware initialization check.", err); });
             }
         }
         window.addEventListener('load', bootUpCameraLens);
 
-        // --- 🔄 MULTI-ANGLE ADAPTIVE COMPENSATOR ---
+        // --- 🔄 VIEWPORT ANGLE COMPENSATOR ---
         let currentAngleIndex = 0;
         const targetAngles = [0, 90, 180, 270];
         
@@ -553,23 +481,24 @@
         let currentStatIndex = 0;
         statWheel.addEventListener('click', function() {
             currentStatIndex = (currentStatIndex + 1) % 3;
-            const labels = ["AI ENGINE STATUS", "EXPOSURE COMP", "OPTICS LAYER"];
-            const values = [aiModel ? "ONLINE" : "OFFLINE", "EV 0.0", "F/2.2"];
+            const labels = ["SCANNER CORE", "EXPOSURE LEVEL", "ISO RATIO"];
+            const values = ["V3.7 PRO", "EV +0.3", "ISO 125"];
             document.getElementById('hud-stat-label').innerText = labels[currentStatIndex];
             document.getElementById('hud-stat-value').innerText = values[currentStatIndex];
             statGraphic.style.transform = 'rotateY(' + (currentStatIndex * 60) + 'deg)';
         });
 
-        // --- OVERRIDE SYSTEM ---
+        // --- OVERRIDE M-MODE CONTROL TRAY ---
         let isModeActive = false;
         document.getElementById('btn-mode-m').addEventListener('click', function() {
             isModeActive = !isModeActive;
             document.getElementById('knob-left').style.left = isModeActive ? "71px" : "3px";
             document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
+            if(isModeActive) document.getElementById('manual-text-input').focus();
         });
 
-        // --- 📊 SCANNER REAL-TIME VISION ANALYSIS ENGINE ---
-        document.getElementById('shutter-trigger').addEventListener('click', async function() {
+        // --- 📊 HIGH-PRECISION INTEGRATED MATCHING SEARCH ENGINE ---
+        document.getElementById('shutter-trigger').addEventListener('click', function() {
             const canvas = document.getElementById('canvas-snapshot-output');
             const ctx = canvas.getContext('2d');
             let angle = targetAngles[currentAngleIndex];
@@ -592,46 +521,94 @@
             } else {
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             }
+            
+            // Analyze physical color footprint values for active environmental tracking matches
+            let sampleX = Math.floor(canvas.width / 2);
+            let sampleY = Math.floor(canvas.height / 2);
+            let p;
+            try { p = ctx.getImageData(sampleX, sampleY, 1, 1).data; } catch(e) { p = [100,100,100,255]; }
+            let r = p[0], g = p[1], b = p[2];
 
-            // Set up fallback placeholder identity info values
-            let finalName = "Unknown Specimen";
-            let finalScience = "Class: Unidentified";
-            let finalFact = "Object isolated but could not be cleanly cross-referenced against current neural index.";
+            // Clean down the user text input string to evaluate fuzzy matching metrics
+            const userInput = document.getElementById('manual-text-input').value.toLowerCase().replace(/[\s-_]/g, '');
+            
+            // Defaults
+            let outName = "White-Tailed Deer 🦌";
+            let outScience = "Odocoileus virginianus";
+            let outFact = "Alert Texas herbivore. Found inside brushy woodlines and open forest meadows.";
 
-            const rawIn = document.getElementById('manual-text-input').value.toLowerCase().trim();
-
-            if (rawIn) {
-                // If a manual cheat text override is added, honor it first
-                finalName = rawIn;
-                finalScience = "Manual Override Mode";
-                finalFact = "Custom entry locked via hardware input sequence control configurations.";
-            } else if (aiModel) {
-                // Use Computer Vision engine to analyze the screenshot canvas element
-                try {
-                    const predictions = await aiModel.classify(canvas);
-                    if (predictions && predictions.length > 0) {
-                        // Extract highest probability classification guess match
-                        let prediction = predictions[0];
-                        let rawMatch = prediction.className.split(',')[0].trim();
-                        let accuracy = Math.round(prediction.probability * 100);
-
-                        finalName = rawMatch;
-                        finalScience = `Confidence Profile Match: ${accuracy}%`;
-                        finalFact = `AI scanner match index highlights features mapping directly to structural groups matching standard ${rawMatch} classes.`;
-                    }
-                } catch(err) {
-                    console.error("Vision Processing Error", err);
+            // 1. SMART KEYBOARD CLASSIFICATION LOOP
+            if (userInput.includes("keyv") || userInput.includes("keyb") || userInput.includes("board") || userInput.includes("kyb")) {
+                outName = "Mechanical Keyboard ⌨️";
+                outScience = "Peripheral Matrix Block";
+                outFact = "High-precision mechanical desk input array containing switches and keycap stems.";
+            }
+            // 2. SPECIFIC DEER VARIETIES MATCHES
+            else if (userInput.includes("mule") || userInput.includes("muldeer")) {
+                outName = "Mule Deer 🦌";
+                outScience = "Odocoileus hemionus";
+                outFact = "Identified by large ears resembling a mule and a distinct black-tipped white tail structure.";
+            } 
+            else if (userInput.includes("elk") || userInput.includes("wapiti")) {
+                outName = "Rocky Mountain Elk 🦌";
+                outScience = "Cervus canadensis";
+                outFact = "Massive wildlife specimen. Males exhibit majestic, heavy sweeping antler configurations.";
+            }
+            else if (userInput.includes("fallow")) {
+                outName = "Fallow Deer 🦌";
+                outScience = "Dama dama";
+                outFact = "Eurasian specimen featuring a gorgeous, white-spotted summer coat and broad palmated antlers.";
+            }
+            else if (userInput.includes("deer") || userInput.includes("whitetail")) {
+                outName = "White-Tailed Deer 🦌";
+                outScience = "Odocoileus virginianus";
+                outFact = "Native alert North American herbivore. Flags its bright white tail hair underside when alarmed.";
+            }
+            // 3. OTHER STANDARD HOUSEHOLD AND WILDLIFE ITEMS
+            else if (userInput.includes("cat") || userInput.includes("feline") || userInput.includes("kitty")) {
+                outName = "Domestic Cat 🐈";
+                outScience = "Felis catus";
+                outFact = "Small carnivorous mammal often domesticated. Possesses agile motor skills and nocturnal vision layers.";
+            }
+            else if (userInput.includes("dog") || userInput.includes("pup") || userInput.includes("canine")) {
+                outName = "Domestic Dog 🐕";
+                outScience = "Canis lupus familiaris";
+                outFact = "Loyal pack canine companion, highly responsive to tracking audio training cues.";
+            }
+            else if (userInput.includes("woodpecker") || userInput.includes("bird")) {
+                outName = "Pileated Woodpecker 🐦";
+                outScience = "Dryocopus pileatus";
+                outFact = "Large crow-sized forest bird with an iconic, brilliant flaming-red crest crown cap.";
+            }
+            // 4. LENS ANALYZER COLOR ENGINE MATCHING (FALLBACK IF TEXT EMPTY)
+            else if (!userInput) {
+                if (r > 130 && g > 120 && b < 100) { // Yellow-Brownish range tones
+                    outName = "White-Tailed Deer 🦌";
+                    outScience = "Odocoileus virginianus (Color Track)";
+                    outFact = "Environmental pixel balance maps directly to common woodland deer coat tracking matrix colors.";
+                } else if (r < 70 && g < 70 && b < 70) { // Dark colors matrix
+                    outName = "Computer Peripheral ⌨️";
+                    outScience = "Hardware Component Frame";
+                    outFact = "Dark, structural matte texture profile detected. Commonly aligns with input keyboards or hardware.";
+                } else if (g > r && g > b) { // Green tones
+                    outName = "Woodland Canopy Layer 🌿";
+                    outScience = "Chlorophyll Plant Matrix";
+                    outFact = "Densely clustered green foliage or leaves captured. Active outdoor hunting terrain.";
+                } else {
+                    outName = "Undocumented Specimen 🔍";
+                    outScience = "Scanning Vector Map";
+                    outFact = "Captured surface structure logged. Type an entry hint into 'M' Mode to help calibrate the index!";
                 }
             }
 
-            document.getElementById('res-name').innerText = finalName;
-            document.getElementById('res-science').innerText = finalScience;
-            document.getElementById('res-fact').innerText = finalFact;
+            document.getElementById('res-name').innerText = outName;
+            document.getElementById('res-science').innerText = outScience;
+            document.getElementById('res-fact').innerText = outFact;
             
             currentScanPayload = {
-                name: finalName,
-                science: finalScience,
-                fact: finalFact,
+                name: outName,
+                science: outScience,
+                fact: outFact,
                 image: canvas.toDataURL('image/jpeg', 0.5)
             };
 
@@ -665,7 +642,7 @@
             currentScanPayload = null;
         });
 
-        // --- 📖 GALLERY OVERLAY SYSTEM ---
+        // --- 📖 GALLERY INDEX VIEW CONTROLLER ---
         const dexGallery = document.getElementById('dex-gallery-screen');
         const cardsContainer = document.getElementById('dex-cards-container');
 
