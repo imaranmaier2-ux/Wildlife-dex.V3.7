@@ -2,93 +2,472 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WILDLIFE DEX // TACTILE CAM V3.7</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro AI Viewfinder</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <style>
-        /* [Keeping your exact CSS structure for continuity] */
-        * { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; background-color: #121110; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        .camera-container { width: 100%; height: 100%; background-color: #d7be9f; display: grid; padding: 12px; gap: 10px; grid-template-columns: 140px 1fr 140px; }
-        @media (orientation: portrait) { .camera-container { grid-template-columns: 1fr; grid-template-rows: 110px 1fr 140px; } }
-        .panel-left, .panel-right { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; z-index: 10; }
-        .panel-center { position: relative; width: 100%; height: 100%; overflow: hidden; }
-        .viewfinder-viewport { width: 100%; height: 100%; background-color: #000; border-radius: 24px; position: relative; overflow: hidden; }
-        #embedded-live-video { width: 100%; height: 100%; object-fit: cover; transform-origin: center; transition: transform 0.1s; }
-        .manual-keyboard-override { position: absolute; bottom: 60px; left: 10px; width: calc(100% - 20px); padding: 10px; background: #000; color: #fff; border: 1px dashed #beaa91; display: none; z-index: 50; }
-        .giant-shutter-red { width: 90px; height: 90px; border-radius: 50%; background: #ff3b30; border: none; cursor: pointer; }
-        .hud-telemetry-overlay-card { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; background: rgba(18,17,16,0.95); border-radius: 18px; padding: 20px; display: none; flex-direction: column; z-index: 100; color: #fff; }
-        .dex-dashboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121110; z-index: 200; display: none; padding: 20px; overflow-y: auto; }
-        .dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
-        .mini-polaroid-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #333; }
+        :root {
+            --neon-green: #00ff66;
+            --dark-bg: #0a0a0c;
+            --panel-bg: #141419;
+            --crt-amber: #ffb000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .camera-container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--panel-bg);
+            border: 4px solid #2d2d38;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        /* Top Brand Plate */
+        .brand-plate {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed #2d2d38;
+            padding-bottom: 12px;
+        }
+
+        .brand-logo {
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #8e8e9f;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand-logo::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #ff3b30;
+            border-radius: 50%;
+        }
+
+        .model-number {
+            font-size: 0.75rem;
+            color: #555566;
+            background: #0d0d11;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #22222a;
+        }
+
+        /* Viewfinder Window Frame */
+        .viewfinder-frame {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #1a1a22;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror view */
+        }
+
+        #snapshot-canvas {
+            display: none;
+        }
+
+        /* Reticle Overlay */
+        .reticle-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+        }
+        .top-left { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .top-right { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .bottom-left { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .bottom-right { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+        .center-cross {
+            width: 16px;
+            height: 16px;
+            position: relative;
+        }
+        .center-cross::before, .center-cross::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .center-cross::before { top: 7px; left: 0; width: 16px; height: 2px; }
+        .center-cross::after { top: 0; left: 7px; width: 2px; height: 16px; }
+
+        /* Scanline Overlay Effect */
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Camera Flash Trigger Animation */
+        .flash-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes trigger-flash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Control Panel Dashboard */
+        .dashboard {
+            margin-top: 20px;
+            background: #0d0d11;
+            border: 2px solid #22222a;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #8e8e9f;
+            margin-bottom: 12px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #ffb000;
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--crt-amber);
+        }
+
+        .status-dot.ready {
+            background: var(--neon-green);
+            box-shadow: 0 0 8px var(--neon-green);
+        }
+
+        .status-dot.error {
+            background: #ff3b30;
+            box-shadow: 0 0 8px #ff3b30;
+        }
+
+        /* Capture Button Layout */
+        .action-container {
+            display: flex;
+            justify-content: center;
+            padding: 10px 0 5px 0;
+        }
+
+        .shutter-btn {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: #1a1a22;
+            border: 4px solid #2d2d38;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            outline: none;
+        }
+
+        .shutter-btn::after {
+            content: '';
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #ff3b30;
+            display: block;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3);
+            transition: transform 0.1s ease;
+        }
+
+        .shutter-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .shutter-btn:active::after {
+            transform: scale(0.92);
+            background: #cc2f26;
+        }
+
+        .shutter-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Prediction Result Overlay */
+        .result-overlay {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            right: 25px;
+            background: rgba(13, 13, 17, 0.95);
+            border: 2px solid var(--neon-green);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 5;
+            display: none;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 10px 30px rgba(0,255,102,0.15);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(0,255,102,0.2);
+            padding-bottom: 4px;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .result-meta {
+            font-size: 0.75rem;
+            color: #8e8e9f;
+        }
     </style>
 </head>
 <body>
+
     <div class="camera-container">
-        <div class="panel-left">
-            <div id="zoom-roller-wheel" style="width:100px; height:150px; background:#beaa91; border-radius:20px; cursor:ns-resize;"></div>
-            <button id="btn-mode-m" style="width:50px; height:50px; border-radius:50%;">M</button>
+        <div class="brand-plate">
+            <div class="brand-logo">NEXUS-VISION</div>
+            <div class="model-number">MOD-5M</div>
         </div>
-        <div class="panel-center">
-            <div class="viewfinder-viewport">
-                <video id="embedded-live-video" autoplay playsinline muted></video>
-                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ ENTER TARGET ]">
-                <div class="hud-telemetry-overlay-card" id="result-overlay">
-                    <canvas id="canvas-snapshot-output" style="width:100%; height:200px; background:#222;"></canvas>
-                    <h2 id="res-name">Specimen</h2>
-                    <button id="btn-log-dex">Save to Dex</button>
-                    <button id="btn-close-card">Close</button>
+
+        <div class="viewfinder-frame">
+            <video id="webcam" autoplay playsinline muted></video>
+            <canvas id="snapshot-canvas"></canvas>
+            
+            <div class="reticle-layer">
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="center-cross"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
+            </div>
+
+            <div class="scan-overlay"></div>
+            <div id="flash-layer" class="flash-effect"></div>
+        </div>
+
+        <div id="result-box" class="result-overlay">
+            <div class="result-header">
+                <span>Object Analysis</span>
+                <span id="match-pct">0% MATCH</span>
+            </div>
+            <div id="result-text" class="result-title">ANALYZING...</div>
+            <div class="result-meta">SYSTEM INFERENCE COMPLETED</div>
+        </div>
+
+        <div class="dashboard">
+            <div class="status-row">
+                <span>SYS_STATUS:</span>
+                <div class="status-indicator">
+                    <div id="status-dot" class="status-dot"></div>
+                    <span id="status-text">INITIALIZING...</span>
                 </div>
             </div>
-        </div>
-        <div class="panel-right">
-            <button class="giant-shutter-red" id="shutter-trigger"></button>
-            <button id="btn-open-dex">📖</button>
-        </div>
-        <div class="dex-dashboard-overlay" id="dex-gallery-screen">
-            <button id="btn-close-gallery">Close</button>
-            <div class="dex-grid" id="dex-cards-container"></div>
+            
+            <div class="action-container">
+                <button id="shutter-btn" class="shutter-btn" disabled aria-label="Capture Frame"></button>
+            </div>
         </div>
     </div>
 
     <script>
-        const video = document.getElementById('embedded-live-video');
+        // Exact Teachable Machine Model URL Configuration Link
+        const TM_MODEL_URL = "https://teachablemachine.withgoogle.com/models/[...]/";
+
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('snapshot-canvas');
+        const shutterBtn = document.getElementById('shutter-btn');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const resultBox = document.getElementById('result-box');
+        const resultText = document.getElementById('result-text');
+        const matchPct = document.getElementById('match-pct');
+        const flashLayer = document.getElementById('flash-layer');
+
+        let aiModel = null;
+
+        // 1. Core Model Loading Logic via Teachable Machine Library 
+        async function loadModel() {
+            try {
+                const modelURL = TM_MODEL_URL + "model.json";
+                const metadataURL = TM_MODEL_URL + "metadata.json";
+                
+                // Initialize model instance from the tmImage object hook
+                aiModel = await tmImage.load(modelURL, metadataURL);
+                
+                statusDot.classList.add('ready');
+                statusText.innerText = "SYSTEM READY";
+                shutterBtn.removeAttribute('disabled');
+            } catch (error) {
+                console.error("Model initialization failure: ", error);
+                statusDot.classList.add('error');
+                statusText.innerText = "CORE INIT ERROR";
+            }
+        }
+
+        // 2. Hardware Webcam Video Stream Configuration 
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
+                    audio: false
+                });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error("Camera access blocked: ", error);
+                statusDot.classList.add('error');
+                statusText.innerText = "HW CAM ERROR";
+            }
+        }
+
+        // 3. Shutter Trigger Snapshot Capture Handler
+        function takeSnapshot() {
+            // Flash UI effect animation trigger
+            flashLayer.style.animation = 'none';
+            flashLayer.offsetHeight; // Force DOM reflow
+            flashLayer.style.animation = 'trigger-flash 0.4s ease-out forwards';
+
+            // Freeze static video frame to hidden processing canvas context elements
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Mirror image capture translation context adjustments
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Forward canvas image frame pipeline processing to model evaluator
+            classifyFrame();
+        }
+
+        // 4. Teachable Machine Array Prediction Classification Logic
+        async function classifyFrame() {
+            if (!aiModel) return;
+
+            statusText.innerText = "PROCESSING...";
+            resultBox.style.display = 'none';
+
+            try {
+                // Pass drawn snapshot canvas directly to prediction sequence matrix
+                const predictions = await aiModel.predict(canvas);
+                
+                // Parse through prediction probabilities array to isolate highest class score weighting
+                let topPrediction = predictions[0];
+                for (let i = 1; i < predictions.length; i++) {
+                    if (predictions[i].probability > topPrediction.probability) {
+                        topPrediction = predictions[i];
+                    }
+                }
+
+                // Render match details onto screen display text targets
+                const percentage = Math.round(topPrediction.probability * 100);
+                resultText.innerText = topPrediction.className;
+                matchPct.innerText = `${percentage}% MATCH`;
+                
+                resultBox.style.display = 'block';
+                statusText.innerText = "SYSTEM READY";
+            } catch (err) {
+                console.error("Classification failure: ", err);
+                statusText.innerText = "INFERENCE ERR";
+            }
+        }
+
+        // Action attachments
+        shutterBtn.addEventListener('click', takeSnapshot);
         
-        // Initialization
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(s => video.srcObject = s)
-            .catch(e => alert("Camera blocked. Please enable permissions."));
-
-        // Zoom Logic
-        let currentZoom = 1;
-        document.getElementById('zoom-roller-wheel').addEventListener('touchmove', (e) => {
-            currentZoom = Math.max(1, Math.min(3, currentZoom + (e.touches[0].clientY > 100 ? 0.1 : -0.1)));
-            video.style.transform = `scale(${currentZoom})`;
+        window.addEventListener('DOMContentLoaded', () => {
+            initCamera();
+            loadModel();
         });
-
-        // Scan Logic
-        document.getElementById('shutter-trigger').onclick = () => {
-            const canvas = document.getElementById('canvas-snapshot-output');
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            document.getElementById('result-overlay').style.display = "flex";
-        };
-
-        // Storage
-        document.getElementById('btn-log-dex').onclick = () => {
-            let data = JSON.parse(localStorage.getItem('dex') || '[]');
-            data.push({ name: document.getElementById('manual-text-input').value || "Unknown", img: document.getElementById('canvas-snapshot-output').toDataURL() });
-            localStorage.setItem('dex', JSON.stringify(data));
-            document.getElementById('result-overlay').style.display = "none";
-        };
-
-        // UI Toggles
-        document.getElementById('btn-mode-m').onclick = () => document.getElementById('manual-text-input').style.display = "block";
-        document.getElementById('btn-close-card').onclick = () => document.getElementById('result-overlay').style.display = "none";
-        document.getElementById('btn-open-dex').onclick = () => {
-            document.getElementById('dex-gallery-screen').style.display = "block";
-            const cards = document.getElementById('dex-cards-container');
-            cards.innerHTML = JSON.parse(localStorage.getItem('dex') || '[]').map(i => `<div class="mini-polaroid-img" style="background-image:url(${i.img})"></div>`).join('');
-        };
-        document.getElementById('btn-close-gallery').onclick = () => document.getElementById('dex-gallery-screen').style.display = "none";
     </script>
 </body>
 </html>
