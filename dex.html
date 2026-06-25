@@ -2,472 +2,712 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro AI Viewfinder</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-    <style>
-        :root {
-            --neon-green: #00ff66;
-            --dark-bg: #0a0a0c;
-            --panel-bg: #141419;
-            --crt-amber: #ffb000;
-        }
+    <title>WILDLIFE DEX // TACTILE CAM V3.7</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 
+    <style>
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            background-color: var(--dark-bg);
-            color: #fff;
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            background-color: #121110;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Helvetica, Arial, sans-serif;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            padding: 20px;
         }
 
         .camera-container {
             width: 100%;
-            max-width: 440px;
-            background: var(--panel-bg);
-            border: 4px solid #2d2d38;
-            border-radius: 24px;
-            padding: 25px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
+            height: 100%;
+            background-color: #d7be9f;
+            display: grid;
+            padding: 12px;
             position: relative;
+            gap: 10px;
+            grid-template-columns: 140px 1fr 140px;
+            grid-template-rows: 1fr;
         }
 
-        /* Top Brand Plate */
-        .brand-plate {
+        @media (orientation: portrait) {
+            .camera-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 110px 1fr 140px;
+            }
+            .panel-left {
+                flex-direction: row !important;
+                width: 100% !important;
+                height: 100% !important;
+                padding: 0 10px !important;
+            }
+            .panel-right {
+                flex-direction: row-reverse !important;
+                width: 100% !important;
+                height: 100% !important;
+                padding: 0 10px !important;
+                gap: 15px;
+            }
+            .sunken-tray-vertical-barrel {
+                width: 120px !important;
+                height: 46px !important;
+            }
+            .vertical-barrel-roller {
+                width: 106px !important;
+                height: 34px !important;
+                background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px) !important;
+            }
+            .giant-shutter-red {
+                width: 76px !important;
+                height: 76px !important;
+            }
+            .right-action-cluster {
+                flex-direction: row !important;
+                width: auto !important;
+                gap: 12px !important;
+            }
+        }
+
+        /* --- PANELS --- */
+        .panel-left {
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px dashed #2d2d38;
-            padding-bottom: 12px;
-        }
-
-        .brand-logo {
-            font-size: 1.1rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            color: #8e8e9f;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .brand-logo::before {
-            content: '';
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #ff3b30;
-            border-radius: 50%;
-        }
-
-        .model-number {
-            font-size: 0.75rem;
-            color: #555566;
-            background: #0d0d11;
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #22222a;
-        }
-
-        /* Viewfinder Window Frame */
-        .viewfinder-frame {
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            border: 2px solid #1a1a22;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        #webcam {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1); /* Mirror view */
-        }
-
-        #snapshot-canvas {
-            display: none;
-        }
-
-        /* Reticle Overlay */
-        .reticle-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-        }
-
-        .corner {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.25);
-        }
-        .top-left { top: 15px; left: 15px; border-right: none; border-bottom: none; }
-        .top-right { top: 15px; right: 15px; border-left: none; border-bottom: none; }
-        .bottom-left { bottom: 15px; left: 15px; border-right: none; border-top: none; }
-        .bottom-right { bottom: 15px; right: 15px; border-left: none; border-top: none; }
-
-        .center-cross {
-            width: 16px;
-            height: 16px;
-            position: relative;
-        }
-        .center-cross::before, .center-cross::after {
-            content: '';
-            position: absolute;
-            background: rgba(255, 255, 255, 0.4);
-        }
-        .center-cross::before { top: 7px; left: 0; width: 16px; height: 2px; }
-        .center-cross::after { top: 0; left: 7px; width: 2px; height: 16px; }
-
-        /* Scanline Overlay Effect */
-        .scan-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 6px 100%;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        /* Camera Flash Trigger Animation */
-        .flash-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            opacity: 0;
-            pointer-events: none;
+            padding: 10px 0;
             z-index: 10;
         }
 
-        @keyframes trigger-flash {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        /* Control Panel Dashboard */
-        .dashboard {
-            margin-top: 20px;
-            background: #0d0d11;
-            border: 2px solid #22222a;
-            border-radius: 12px;
-            padding: 15px;
-        }
-
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-            color: #8e8e9f;
-            margin-bottom: 12px;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #ffb000;
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--crt-amber);
-        }
-
-        .status-dot.ready {
-            background: var(--neon-green);
-            box-shadow: 0 0 8px var(--neon-green);
-        }
-
-        .status-dot.error {
-            background: #ff3b30;
-            box-shadow: 0 0 8px #ff3b30;
-        }
-
-        /* Capture Button Layout */
-        .action-container {
-            display: flex;
-            justify-content: center;
-            padding: 10px 0 5px 0;
-        }
-
-        .shutter-btn {
-            width: 76px;
-            height: 76px;
-            border-radius: 50%;
-            background: #1a1a22;
-            border: 4px solid #2d2d38;
-            cursor: pointer;
+        .sunken-tray-horizontal {
+            background-color: #beaa91;
+            width: 110px; height: 42px;
+            border-radius: 21px;
+            box-shadow: inset 2px 3px 6px rgba(0,0,0,0.3);
             position: relative;
             display: flex;
-            justify-content: center;
             align-items: center;
-            transition: all 0.1s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            outline: none;
         }
 
-        .shutter-btn::after {
-            content: '';
-            width: 52px;
-            height: 52px;
+        .black-knob-slider {
+            width: 36px; height: 36px;
+            background-color: #242221;
             border-radius: 50%;
-            background: #ff3b30;
-            display: block;
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3);
-            transition: transform 0.1s ease;
-        }
-
-        .shutter-btn:active {
-            transform: scale(0.96);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-        }
-
-        .shutter-btn:active::after {
-            transform: scale(0.92);
-            background: #cc2f26;
-        }
-
-        .shutter-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        /* Prediction Result Overlay */
-        .result-overlay {
+            box-shadow: 2px 3px 6px rgba(0,0,0,0.5);
             position: absolute;
-            bottom: 25px;
-            left: 25px;
-            right: 25px;
-            background: rgba(13, 13, 17, 0.95);
-            border: 2px solid var(--neon-green);
-            border-radius: 12px;
-            padding: 15px;
-            z-index: 5;
-            display: none;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 10px 30px rgba(0,255,102,0.15);
+            left: 3px;
+            transition: left 0.2s ease;
         }
 
-        .result-header {
+        .sunken-tray-vertical-barrel {
+            background-color: #beaa91;
+            width: 110px; height: 160px;
+            border-radius: 24px;
+            box-shadow: inset 3px 4px 8px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            touch-action: none;
+        }
+
+        .vertical-barrel-roller {
+            width: 94px; height: 144px;
+            border-radius: 16px;
+            background: repeating-linear-gradient(0deg, #c5c5c5 0px, #c5c5c5 12px, #ffffff 12px, #ffffff 14px, #a3a3a3 14px, #a3a3a3 20px);
+        }
+
+        .matte-round-btn {
+            width: 46px; height: 46px;
+            background-color: #242221;
+            border: none; border-radius: 50%;
+            color: #ffffff; font-size: 14px; font-weight: bold;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.4), inset 0px 1px 1px #666;
+            cursor: pointer;
+        }
+        .matte-round-btn:active {
+            transform: scale(0.96);
+            background-color: #1a1918;
+        }
+
+        /* --- VIEWFINDER VIEWPORT --- */
+        .panel-center {
+            position: relative;
+            width: 100%; height: 100%;
+            overflow: hidden;
+        }
+
+        .viewfinder-viewport {
+            width: 100%; height: 100%;
+            background-color: #000000;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
+        }
+
+        #embedded-live-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform-origin: center center;
+            transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.25, 1);
+            cursor: pointer;
+        }
+
+        .calibration-hint {
+            position: absolute;
+            top: 70px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: #fff; font-size: 10px; font-weight: bold;
+            padding: 4px 8px; border-radius: 4px;
+            pointer-events: none; letter-spacing: 1px;
+            opacity: 0.7; z-index: 20;
+        }
+
+        .hud-center-stats {
+            position: absolute;
+            top: 15px; left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #ffffff;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.7);
+            pointer-events: none; z-index: 20;
+        }
+
+        .hud-ticks { font-size: 14px; letter-spacing: 5px; opacity: 0.6; margin-bottom: 2px; }
+        .hud-label { font-size: 10px; font-weight: bold; letter-spacing: 2px; opacity: 0.8; }
+        .hud-main-value { font-size: 24px; font-weight: 900; }
+
+        .hud-bottom-bar {
+            position: absolute;
+            bottom: 12px; left: 15px; right: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none; z-index: 20;
+        }
+
+        .hud-pill-box {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px; font-weight: bold; color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .hud-inline-metrics { display: flex; gap: 12px; font-size: 11px; font-weight: bold; color: white; }
+
+        .manual-keyboard-override {
+            width: calc(100% - 30px);
+            position: absolute;
+            bottom: 55px; left: 15px;
+            background: rgba(18,17,16,0.95);
+            border: 1px dashed #555; border-radius: 8px;
+            color: #fff; padding: 10px; text-align: center;
+            font-size: 11px; display: none; z-index: 22;
+        }
+
+        /* --- MECHANICAL PANEL --- */
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            z-index: 10;
+        }
+
+        .sunken-tray-horizontal-barrel {
+            background-color: #beaa91;
+            width: 115px; height: 48px;
+            border-radius: 14px;
+            box-shadow: inset 2px 3px 6px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            touch-action: none;
+        }
+
+        .horizontal-barrel-roller { width: 102px; height: 38px; border-radius: 8px; background: repeating-linear-gradient(90deg, #c5c5c5 0px, #c5c5c5 10px, #ffffff 10px, #ffffff 12px, #a3a3a3 12px, #a3a3a3 16px); }
+
+        .giant-shutter-red {
+            width: 95px; height: 95px;
+            background-color: #ff3b30;
+            border: none; border-radius: 50%;
+            cursor: pointer;
+            box-shadow: inset 1px 2px 3px rgba(255,255,255,0.4), 0px 6px 12px rgba(0,0,0,0.45);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .giant-shutter-red:active { transform: scale(0.95); box-shadow: 0px 2px 4px rgba(0,0,0,0.4); }
+
+        .shutter-cross-icon {
+            width: 22px; height: 4px; background-color: #ffffff; position: relative;
+        }
+        .shutter-cross-icon::before {
+            content: ""; width: 4px; height: 22px; background-color: #ffffff; position: absolute; top: -9px; left: 9px;
+        }
+
+        .right-action-cluster {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* --- DATA SHEET OVERLAY --- */
+        .hud-telemetry-overlay-card {
+            position: absolute;
+            top: 10px; bottom: 10px; left: 10px; right: 10px;
+            background-color: rgba(18, 17, 16, 0.98);
+            border-radius: 18px;
+            padding: 15px;
+            display: none;
+            grid-template-columns: 1fr;
+            grid-template-rows: 140px 1fr;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        @media (min-width: 601px) {
+            .hud-telemetry-overlay-card { grid-template-columns: 170px 1fr; grid-template-rows: 1fr; }
+        }
+
+        .captured-polaroid-frame {
+            width: 100%; height: 100%;
+            background-color: #f4f1eb;
+            padding: 8px 8px 24px 8px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        #canvas-snapshot-output { width: 100%; height: 100%; object-fit: cover; background-color: #222; }
+        .card-info-pane { display: flex; flex-direction: column; justify-content: space-between; }
+        .card-header { font-size: 10px; color: #ff3b30; font-weight: bold; letter-spacing: 2px; }
+        .card-title { font-size: 18px; font-weight: 900; color: #fff; margin: 2px 0; }
+        .card-sub { font-size: 11px; color: #beaa91; font-style: italic; }
+        .card-body { font-size: 11px; color: #e5e5ea; line-height: 1.4; margin-top: 5px; }
+        .card-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .action-btn { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; transition: background 0.2s; }
+        .btn-save { background-color: #ffffff; color: #000; }
+        .btn-save:active { background-color: #4cd964; color: #fff; }
+        .btn-reset { background-color: #333; color: #fff; }
+
+        /* --- 📖 WILDLIFE DEX GALLERY SCREEN --- */
+        .dex-dashboard-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #121110;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .dex-header-bar {
             display: flex;
             justify-content: space-between;
-            font-size: 0.7rem;
-            color: var(--neon-green);
-            text-transform: uppercase;
+            align-items: center;
+            border-bottom: 2px dashed #beaa91;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dex-title {
+            color: #d7be9f;
+            font-size: 20px;
+            font-weight: 900;
             letter-spacing: 1px;
-            margin-bottom: 6px;
-            border-bottom: 1px solid rgba(0,255,102,0.2);
-            padding-bottom: 4px;
         }
 
-        .result-title {
-            font-size: 1.2rem;
+        .dex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+            padding-bottom: 40px;
+        }
+
+        .mini-polaroid-card {
+            background-color: #f4f1eb;
+            padding: 6px 6px 18px 6px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 2px;
+        }
+
+        .mini-polaroid-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background-color: #333;
+        }
+
+        .mini-polaroid-label {
+            color: #121110;
+            font-size: 11px;
             font-weight: bold;
-            color: #fff;
-            text-transform: uppercase;
-            margin-bottom: 4px;
+            text-align: center;
+            margin-top: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .result-meta {
-            font-size: 0.75rem;
-            color: #8e8e9f;
+        .empty-dex-notice {
+            color: #beaa91;
+            text-align: center;
+            font-size: 13px;
+            font-style: italic;
+            grid-column: 1 / -1;
+            padding: 4px 0;
         }
     </style>
 </head>
 <body>
 
     <div class="camera-container">
-        <div class="brand-plate">
-            <div class="brand-logo">NEXUS-VISION</div>
-            <div class="model-number">MOD-5M</div>
-        </div>
-
-        <div class="viewfinder-frame">
-            <video id="webcam" autoplay playsinline muted></video>
-            <canvas id="snapshot-canvas"></canvas>
-            
-            <div class="reticle-layer">
-                <div class="corner top-left"></div>
-                <div class="corner top-right"></div>
-                <div class="center-cross"></div>
-                <div class="corner bottom-left"></div>
-                <div class="corner bottom-right"></div>
+        
+        <div class="panel-left">
+            <div class="sunken-tray-horizontal">
+                <div class="black-knob-slider" id="knob-left"></div>
             </div>
-
-            <div class="scan-overlay"></div>
-            <div id="flash-layer" class="flash-effect"></div>
-        </div>
-
-        <div id="result-box" class="result-overlay">
-            <div class="result-header">
-                <span>Object Analysis</span>
-                <span id="match-pct">0% MATCH</span>
+            <div class="sunken-tray-vertical-barrel" id="zoom-roller-wheel">
+                <div class="vertical-barrel-roller" id="zoom-barrel-graphic"></div>
             </div>
-            <div id="result-text" class="result-title">ANALYZING...</div>
-            <div class="result-meta">SYSTEM INFERENCE COMPLETED</div>
+            <button class="matte-round-btn" id="btn-mode-m">M</button>
         </div>
 
-        <div class="dashboard">
-            <div class="status-row">
-                <span>SYS_STATUS:</span>
-                <div class="status-indicator">
-                    <div id="status-dot" class="status-dot"></div>
-                    <span id="status-text">INITIALIZING...</span>
+        <div class="panel-center">
+            <div class="viewfinder-viewport" id="viewport-frame">
+                <video id="embedded-live-video" autoplay playsinline muted></video>
+                
+                <div class="calibration-hint" id="cal-hint">Tap screen to rotate angle</div>
+
+                <div class="hud-center-stats">
+                    <div class="hud-ticks">▪ ▪ ▪ ▪ ▪ <span style="color:#ff3b30;">▪</span> ▪ ▪ ▪ ▪</div>
+                    <div class="hud-label" id="hud-stat-label">AI CORE STATUS</div>
+                    <div class="hud-main-value" id="hud-stat-value">BOOTING...</div>
                 </div>
-            </div>
-            
-            <div class="action-container">
-                <button id="shutter-btn" class="shutter-btn" disabled aria-label="Capture Frame"></button>
+
+                <div class="hud-bottom-bar">
+                    <div class="hud-pill-box" id="hud-lower-pill">♦ INITIALIZING AI</div>
+                    <div class="hud-inline-metrics">
+                        <div>⚏ 18</div>
+                        <div>☀ 5440K</div>
+                        <div style="color:#ff3b30;">📊||ı|</div>
+                    </div>
+                </div>
+
+                <input type="text" id="manual-text-input" class="manual-keyboard-override" placeholder="[ AI OVERRIDE: TYPE SPECIES NAME ]">
+
+                <div class="hud-telemetry-overlay-card" id="result-overlay">
+                    <div class="captured-polaroid-frame">
+                        <canvas id="canvas-snapshot-output"></canvas>
+                    </div>
+                    <div class="card-info-pane">
+                        <div>
+                            <div class="card-header" id="res-header">Wildlife-dex V3.7 Neural Scan</div>
+                            <div class="card-title" id="res-name">Specimen Active</div>
+                            <div class="card-sub" id="res-science">Taxonomy Branch</div>
+                            <div class="card-body" id="res-fact">Processing data loops...</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn btn-save" id="btn-log-dex">＋ Register Entry</button>
+                            <button class="action-btn btn-reset" id="btn-close-card">✖ Resume Stream</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dex-dashboard-overlay" id="dex-gallery-screen">
+                    <div class="dex-header-bar">
+                        <div class="dex-title">📖 COLLECTED WILDLIFE INDEX</div>
+                        <button class="action-btn btn-reset" id="btn-close-gallery" style="max-width: 90px; padding: 6px 12px;">✕ Close</button>
+                    </div>
+                    <div class="dex-grid" id="dex-cards-container">
+                        </div>
+                </div>
+
             </div>
         </div>
+
+        <div class="panel-right">
+            <div class="sunken-tray-horizontal-barrel" id="stat-roller-wheel">
+                <div class="horizontal-barrel-roller" id="stat-barrel-graphic"></div>
+            </div>
+            
+            <button class="giant-shutter-red" id="shutter-trigger">
+                <div class="shutter-cross-icon"></div>
+            </button>
+            
+            <div class="right-action-cluster">
+                <button class="matte-round-btn" id="btn-open-dex" style="background-color: #beaa91; color: #121110;">📖</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // Exact Teachable Machine Model URL Configuration Link
-        const TM_MODEL_URL = "https://teachablemachine.withgoogle.com/models/[...]/";
+        const video = document.getElementById('embedded-live-video');
+        const zoomWheel = document.getElementById('zoom-roller-wheel');
+        const zoomGraphic = document.getElementById('zoom-barrel-graphic');
+        const statWheel = document.getElementById('stat-roller-wheel');
+        const statGraphic = document.getElementById('stat-barrel-graphic');
+        const viewportFrame = document.getElementById('viewport-frame');
 
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('snapshot-canvas');
-        const shutterBtn = document.getElementById('shutter-btn');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
-        const resultBox = document.getElementById('result-box');
-        const resultText = document.getElementById('result-text');
-        const matchPct = document.getElementById('match-pct');
-        const flashLayer = document.getElementById('flash-layer');
-
+        let currentScanPayload = null;
         let aiModel = null;
 
-        // 1. Core Model Loading Logic via Teachable Machine Library 
-        async function loadModel() {
+        // --- 🧠 INITIALIZE TENSORFLOW AI ---
+        async function loadAI() {
             try {
-                const modelURL = TM_MODEL_URL + "model.json";
-                const metadataURL = TM_MODEL_URL + "metadata.json";
-                
-                // Initialize model instance from the tmImage object hook
-                aiModel = await tmImage.load(modelURL, metadataURL);
-                
-                statusDot.classList.add('ready');
-                statusText.innerText = "SYSTEM READY";
-                shutterBtn.removeAttribute('disabled');
-            } catch (error) {
-                console.error("Model initialization failure: ", error);
-                statusDot.classList.add('error');
-                statusText.innerText = "CORE INIT ERROR";
-            }
-        }
-
-        // 2. Hardware Webcam Video Stream Configuration 
-        async function initCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: 'user',
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    },
-                    audio: false
-                });
-                video.srcObject = stream;
-            } catch (error) {
-                console.error("Camera access blocked: ", error);
-                statusDot.classList.add('error');
-                statusText.innerText = "HW CAM ERROR";
-            }
-        }
-
-        // 3. Shutter Trigger Snapshot Capture Handler
-        function takeSnapshot() {
-            // Flash UI effect animation trigger
-            flashLayer.style.animation = 'none';
-            flashLayer.offsetHeight; // Force DOM reflow
-            flashLayer.style.animation = 'trigger-flash 0.4s ease-out forwards';
-
-            // Freeze static video frame to hidden processing canvas context elements
-            const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            
-            // Mirror image capture translation context adjustments
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Forward canvas image frame pipeline processing to model evaluator
-            classifyFrame();
-        }
-
-        // 4. Teachable Machine Array Prediction Classification Logic
-        async function classifyFrame() {
-            if (!aiModel) return;
-
-            statusText.innerText = "PROCESSING...";
-            resultBox.style.display = 'none';
-
-            try {
-                // Pass drawn snapshot canvas directly to prediction sequence matrix
-                const predictions = await aiModel.predict(canvas);
-                
-                // Parse through prediction probabilities array to isolate highest class score weighting
-                let topPrediction = predictions[0];
-                for (let i = 1; i < predictions.length; i++) {
-                    if (predictions[i].probability > topPrediction.probability) {
-                        topPrediction = predictions[i];
-                    }
-                }
-
-                // Render match details onto screen display text targets
-                const percentage = Math.round(topPrediction.probability * 100);
-                resultText.innerText = topPrediction.className;
-                matchPct.innerText = `${percentage}% MATCH`;
-                
-                resultBox.style.display = 'block';
-                statusText.innerText = "SYSTEM READY";
+                aiModel = await mobilenet.load();
+                document.getElementById('hud-lower-pill').innerText = '♦ AI CORE ONLINE';
+                document.getElementById('hud-stat-value').innerText = 'READY';
+                document.getElementById('hud-stat-value').style.color = '#4cd964';
             } catch (err) {
-                console.error("Classification failure: ", err);
-                statusText.innerText = "INFERENCE ERR";
+                console.error("Failed to load AI Model", err);
+                document.getElementById('hud-lower-pill').innerText = '♦ AI OFFLINE';
+                document.getElementById('hud-stat-value').innerText = 'ERROR';
             }
         }
 
-        // Action attachments
-        shutterBtn.addEventListener('click', takeSnapshot);
+        function bootUpCameraLens() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
+                    audio: false 
+                })
+                .then(stream => { 
+                    video.srcObject = stream; 
+                    loadAI(); // Start loading AI after camera is ready
+                })
+                .catch(err => { console.log("Camera hardware alignment check.", err); });
+            }
+        }
+        window.addEventListener('load', bootUpCameraLens);
+
+        // --- 🔄 MULTI-ANGLE ADAPTIVE COMPENSATOR ---
+        let currentAngleIndex = 0;
+        const targetAngles = [0, 90, 180, 270];
         
-        window.addEventListener('DOMContentLoaded', () => {
-            initCamera();
-            loadModel();
+        video.addEventListener('click', () => {
+            currentAngleIndex = (currentAngleIndex + 1) % targetAngles.length;
+            applyViewportTransforms();
+            document.getElementById('cal-hint').style.display = 'none';
+        });
+
+        function applyViewportTransforms() {
+            let angle = targetAngles[currentAngleIndex];
+            let rawScale = currentZoom;
+            
+            let frameWidth = viewportFrame.clientWidth;
+            let frameHeight = viewportFrame.clientHeight;
+            
+            if (angle === 90 || angle === 270) {
+                if (frameHeight > frameWidth) {
+                    rawScale = currentZoom * (frameHeight / frameWidth);
+                } else {
+                    rawScale = currentZoom * (frameWidth / frameHeight);
+                }
+            }
+            
+            video.style.transform = 'rotate(' + angle + 'deg) scale(' + rawScale + ')';
+            if(aiModel) document.getElementById('hud-lower-pill').innerText = '♦ ' + angle + '° CALIBRATED';
+        }
+
+        window.addEventListener('resize', applyViewportTransforms);
+
+        // --- INTERFACE DIALS CONTROLS ---
+        let currentZoom = 1;
+        let zoomRotation = 0;
+        let startY = 0;
+
+        zoomWheel.addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; });
+        zoomWheel.addEventListener('touchmove', function(e) {
+            let deltaY = e.touches[0].clientY - startY;
+            if (Math.abs(deltaY) > 5) {
+                zoomRotation += deltaY * 0.4;
+                zoomGraphic.style.transform = 'rotateX(' + zoomRotation + 'deg)';
+                startY = e.touches[0].clientY;
+                currentZoom += deltaY > 0 ? -0.05 : 0.05;
+                currentZoom = Math.max(1, Math.min(4, currentZoom));
+                applyViewportTransforms();
+            }
+        });
+
+        let currentStatIndex = 0;
+        statWheel.addEventListener('click', function() {
+            currentStatIndex = (currentStatIndex + 1) % 3;
+            const labels = ["AI CORE STATUS", "EXPOSURE VALUE", "ISO OPTICS"];
+            const values = [aiModel ? "READY" : "LOADING", "EV -0.7", "ISO 64"];
+            document.getElementById('hud-stat-label').innerText = labels[currentStatIndex];
+            document.getElementById('hud-stat-value').innerText = values[currentStatIndex];
+            document.getElementById('hud-stat-value').style.color = (currentStatIndex === 0 && aiModel) ? '#4cd964' : '#fff';
+            statGraphic.style.transform = 'rotateY(' + (currentStatIndex * 60) + 'deg)';
+        });
+
+        // --- OVERRIDE SYSTEM ---
+        let isModeActive = false;
+        document.getElementById('btn-mode-m').addEventListener('click', function() {
+            isModeActive = !isModeActive;
+            document.getElementById('knob-left').style.left = isModeActive ? "71px" : "3px";
+            document.getElementById('manual-text-input').style.display = isModeActive ? "block" : "none";
+        });
+
+        // --- 📊 AI SCANNER ANALYSIS ENGINE ---
+        document.getElementById('shutter-trigger').addEventListener('click', async function() {
+            const canvas = document.getElementById('canvas-snapshot-output');
+            const ctx = canvas.getContext('2d');
+            let angle = targetAngles[currentAngleIndex];
+            
+            if (angle === 90 || angle === 270) {
+                canvas.width = video.videoHeight || 480;
+                canvas.height = video.videoWidth || 640;
+            } else {
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+            }
+            
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.scale(currentZoom, currentZoom);
+            ctx.translate(-canvas.width / 2, -canvas.height / 2);
+            
+            if (angle === 90 || angle === 270) {
+                ctx.drawImage(video, 0, 0, canvas.height, canvas.width);
+            } else {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
+
+            // UI LOADING STATE
+            document.getElementById('res-name').innerText = "SCANNING...";
+            document.getElementById('res-science').innerText = "Running Neural Network";
+            document.getElementById('res-fact').innerText = "Analyzing pixel data...";
+            document.getElementById('result-overlay').style.display = "grid";
+
+            let detectedName = "Unknown Specimen";
+            let detectedScience = "Species Unverified";
+            let detectedFact = "Manual logging required.";
+
+            // Check manual override first
+            const rawIn = document.getElementById('manual-text-input').value.trim();
+            if (rawIn) {
+                detectedName = rawIn.toUpperCase();
+                detectedScience = "Manual Override Log";
+                detectedFact = "Entry forced via Mode M keyboard override.";
+            } 
+            // Run TensorFlow AI
+            else if (aiModel) {
+                try {
+                    const predictions = await aiModel.classify(canvas);
+                    if (predictions && predictions.length > 0) {
+                        // Clean up AI output (capitalize first letter, get best guess)
+                        let topGuess = predictions[0].className.split(',')[0];
+                        detectedName = topGuess.charAt(0).toUpperCase() + topGuess.slice(1);
+                        detectedScience = `Match Confidence: ${Math.round(predictions[0].probability * 100)}%`;
+                        detectedFact = `Neural network identified characteristics of ${predictions[0].className}.`;
+                    }
+                } catch (e) {
+                    console.error("AI Classification Error:", e);
+                    detectedFact = "AI classification failed. Check console.";
+                }
+            } else {
+                detectedFact = "AI Model is still loading. Please wait a moment and try again.";
+            }
+
+            // Update UI with final result
+            document.getElementById('res-name').innerText = detectedName;
+            document.getElementById('res-science').innerText = detectedScience;
+            document.getElementById('res-fact').innerText = detectedFact;
+            
+            currentScanPayload = {
+                name: detectedName,
+                science: detectedScience,
+                fact: detectedFact,
+                image: canvas.toDataURL('image/jpeg', 0.6)
+            };
+        });
+
+        // --- 🗃️ SAVING & STORAGE ENGINE ---
+        document.getElementById('btn-log-dex').addEventListener('click', function() {
+            if(!currentScanPayload) return;
+
+            // This localStorage function works perfectly as long as the site is hosted (like on GitHub Pages)
+            let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
+            entries.unshift(currentScanPayload);
+            localStorage.setItem('wildlifeDexEntries', JSON.stringify(entries));
+
+            const saveBtn = document.getElementById('btn-log-dex');
+            saveBtn.innerText = "✓ Entry Registered!";
+            saveBtn.style.backgroundColor = "#4cd964";
+            saveBtn.style.color = "#ffffff";
+            
+            setTimeout(function() {
+                document.getElementById('result-overlay').style.display = "none";
+                saveBtn.innerText = "＋ Register Entry";
+                saveBtn.style.backgroundColor = "#ffffff";
+                saveBtn.style.color = "#000000";
+                currentScanPayload = null;
+            }, 1000);
+        });
+
+        document.getElementById('btn-close-card').addEventListener('click', function() {
+            document.getElementById('result-overlay').style.display = "none";
+            currentScanPayload = null;
+        });
+
+        // --- 📖 GALLERY OVERLAY SYSTEM ---
+        const dexGallery = document.getElementById('dex-gallery-screen');
+        const cardsContainer = document.getElementById('dex-cards-container');
+
+        document.getElementById('btn-open-dex').addEventListener('click', function() {
+            cardsContainer.innerHTML = "";
+            let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
+
+            if(entries.length === 0) {
+                cardsContainer.innerHTML = `<div class="empty-dex-notice">No specimens registered yet. Aim lens and snap your first creature card!</div>`;
+            } else {
+                entries.forEach(item => {
+                    let cardEl = document.createElement('div');
+                    cardEl.className = 'mini-polaroid-card';
+                    cardEl.innerHTML = `
+                        <img class="mini-polaroid-img" src="${item.image}">
+                        <div class="mini-polaroid-label">${item.name}</div>
+                    `;
+                    cardsContainer.appendChild(cardEl);
+                });
+            }
+
+            dexGallery.style.display = "flex";
+        });
+
+        document.getElementById('btn-close-gallery').addEventListener('click', function() {
+            dexGallery.style.display = "none";
         });
     </script>
 </body>
 </html>
+E
+
+
+
+
+
+
+
+
+
+
+
+
+
