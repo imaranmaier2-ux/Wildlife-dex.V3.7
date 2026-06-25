@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
 
     <style>
         * {
@@ -434,7 +434,7 @@
                         <button class="action-btn btn-reset" id="btn-close-gallery" style="max-width: 90px; padding: 6px 12px;">✕ Close</button>
                     </div>
                     <div class="dex-grid" id="dex-cards-container">
-                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -457,6 +457,11 @@
     </div>
 
     <script>
+        // --- 🌐 TEACHABLE MACHINE SETUP ---
+        // Paste your generated Teachable Machine model URL inside the quotes below!
+        // Make sure it includes the final forward slash (/) at the end.
+        const TEACHABLE_MACHINE_URL = "https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID_HERE/";
+
         const video = document.getElementById('embedded-live-video');
         const zoomWheel = document.getElementById('zoom-roller-wheel');
         const zoomGraphic = document.getElementById('zoom-barrel-graphic');
@@ -467,15 +472,20 @@
         let currentScanPayload = null;
         let aiModel = null;
 
-        // --- 🧠 INITIALIZE TENSORFLOW AI ---
+        // --- 🧠 INITIALIZE TEACHABLE MACHINE AI ---
         async function loadAI() {
             try {
-                aiModel = await mobilenet.load();
-                document.getElementById('hud-lower-pill').innerText = '♦ AI CORE ONLINE';
+                const modelURL = TEACHABLE_MACHINE_URL + "model.json";
+                const metadataURL = TEACHABLE_MACHINE_URL + "metadata.json";
+                
+                // Loading custom weights instead of generic mobilenet.load()
+                aiModel = await tmImage.load(modelURL, metadataURL);
+                
+                document.getElementById('hud-lower-pill').innerText = '♦ CUSTOM AI ONLINE';
                 document.getElementById('hud-stat-value').innerText = 'READY';
                 document.getElementById('hud-stat-value').style.color = '#4cd964';
             } catch (err) {
-                console.error("Failed to load AI Model", err);
+                console.error("Failed to load Teachable Machine Model", err);
                 document.getElementById('hud-lower-pill').innerText = '♦ AI OFFLINE';
                 document.getElementById('hud-stat-value').innerText = 'ERROR';
             }
@@ -606,23 +616,34 @@
                 detectedScience = "Manual Override Log";
                 detectedFact = "Entry forced via Mode M keyboard override.";
             } 
-            // Run TensorFlow AI
+            // Run Custom Teachable Machine Matrix
             else if (aiModel) {
                 try {
-                    const predictions = await aiModel.classify(canvas);
+                    // Teachable Machine uses .predict() instead of .classify()
+                    const predictions = await aiModel.predict(canvas);
+                    
                     if (predictions && predictions.length > 0) {
-                        // Clean up AI output (capitalize first letter, get best guess)
-                        let topGuess = predictions[0].className.split(',')[0];
-                        detectedName = topGuess.charAt(0).toUpperCase() + topGuess.slice(1);
-                        detectedScience = `Match Confidence: ${Math.round(predictions[0].probability * 100)}%`;
-                        detectedFact = `Neural network identified characteristics of ${predictions[0].className}.`;
+                        // Scan through arrays to locate the highest precision index match
+                        let highestPred = { className: "", probability: 0 };
+                        for (let i = 0; i < predictions.length; i++) {
+                            if (predictions[i].probability > highestPred.probability) {
+                                highestPred = predictions[i];
+                            }
+                        }
+
+                        if (highestPred.probability > 0.05) {
+                            let cleanLabel = highestPred.className;
+                            detectedName = cleanLabel.toUpperCase();
+                            detectedScience = `Match Confidence: ${Math.round(highestPred.probability * 100)}%`;
+                            detectedFact = `Neural core detected high geometric matching for class signature: ${cleanLabel}.`;
+                        }
                     }
                 } catch (e) {
                     console.error("AI Classification Error:", e);
-                    detectedFact = "AI classification failed. Check console.";
+                    detectedFact = "AI classification failed. Check console log streams.";
                 }
             } else {
-                detectedFact = "AI Model is still loading. Please wait a moment and try again.";
+                detectedFact = "AI Custom Core array is still loading. Please wait a moment.";
             }
 
             // Update UI with final result
@@ -642,7 +663,6 @@
         document.getElementById('btn-log-dex').addEventListener('click', function() {
             if(!currentScanPayload) return;
 
-            // This localStorage function works perfectly as long as the site is hosted (like on GitHub Pages)
             let entries = JSON.parse(localStorage.getItem('wildlifeDexEntries') || '[]');
             entries.unshift(currentScanPayload);
             localStorage.setItem('wildlifeDexEntries', JSON.stringify(entries));
@@ -698,17 +718,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
